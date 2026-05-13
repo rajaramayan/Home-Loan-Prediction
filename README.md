@@ -12,6 +12,8 @@ A machine learning project that predicts the eligible home loan amount for an ap
 
 Repository: [rajaramayan/Home-Loan-Prediction](https://github.com/rajaramayan/Home-Loan-Prediction)
 
+Date: 14 May 2026
+
 ---
 
 ## 📁 Project Structure
