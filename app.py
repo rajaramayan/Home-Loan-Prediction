@@ -11,7 +11,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.neighbors import KNeighborsRegressor
-from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
+from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error, confusion_matrix, ConfusionMatrixDisplay
 from sklearn.model_selection import train_test_split, cross_val_score
 
 # ── Page Config ────────────────────────────────────────────────────────────────
@@ -103,7 +103,22 @@ def preprocess_and_train():
 
     joblib.dump(model_dict['Random Forest'], MODEL_PATH)
     results_df = pd.DataFrame(results).T.sort_values('CV Mean R²', ascending=False)
-    return df_raw, nf, results_df, model_dict['Random Forest']
+
+    # Per-model test predictions (for comparison plots & confusion matrices)
+    predictions = {}
+    for name, model in model_dict.items():
+        predictions[name] = model.predict(X_test)
+
+    # Bin actual and predicted into Low / Medium / High for confusion matrices
+    bins = [y_test.min() - 1, y_test.quantile(0.33), y_test.quantile(0.66), y_test.max() + 1]
+    labels = ['Low', 'Medium', 'High']
+    y_test_binned = pd.cut(y_test, bins=bins, labels=labels)
+    pred_binned = {
+        name: pd.cut(pd.Series(preds, index=y_test.index), bins=bins, labels=labels)
+        for name, preds in predictions.items()
+    }
+
+    return df_raw, nf, results_df, model_dict['Random Forest'], predictions, y_test, y_test_binned, pred_binned
 
 
 # ── Helper: prediction pipeline ───────────────────────────────────────────────
@@ -136,7 +151,7 @@ def prepare_input(home_value, total_income, interest_rate, tenure_months):
 
 # ── Load / train ───────────────────────────────────────────────────────────────
 with st.spinner("Loading data and training models…"):
-    df_raw, nf, results_df, rf_model = preprocess_and_train()
+    df_raw, nf, results_df, rf_model, predictions, y_test, y_test_binned, pred_binned = preprocess_and_train()
 
 # ── Sidebar Navigation ─────────────────────────────────────────────────────────
 st.sidebar.title("🏠 Home Loan Prediction")
@@ -303,6 +318,103 @@ elif page == "📈 Model Evaluation":
         ax.text(v + 500, i, f"₹{v:,.0f}", va='center')
     st.pyplot(fig)
     plt.close(fig)
+
+    # ── Actual vs Predicted ────────────────────────────────────────────────────
+    st.markdown("---")
+    st.subheader("📌 Actual vs Predicted — All Models")
+    model_names = list(predictions.keys())
+    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+    axes = axes.flatten()
+    for idx, name in enumerate(model_names):
+        ax = axes[idx]
+        y_pred = predictions[name]
+        ax.scatter(y_test, y_pred, alpha=0.5, color='steelblue', s=25)
+        mn = min(y_test.min(), y_pred.min())
+        mx = max(y_test.max(), y_pred.max())
+        ax.plot([mn, mx], [mn, mx], 'r--', linewidth=1.5, label='Perfect fit')
+        ax.set_title(name)
+        ax.set_xlabel("Actual Loan Amount (₹)")
+        ax.set_ylabel("Predicted Loan Amount (₹)")
+        r2 = results_df.loc[name, 'Test R²']
+        ax.legend(title=f"R² = {r2}")
+    plt.suptitle("Actual vs Predicted Loan Amount", fontsize=14, fontweight='bold')
+    plt.tight_layout()
+    st.pyplot(fig)
+    plt.close(fig)
+
+    # ── Residual Plots ─────────────────────────────────────────────────────────
+    st.markdown("---")
+    st.subheader("📉 Residual Plots — All Models")
+    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+    axes = axes.flatten()
+    for idx, name in enumerate(model_names):
+        ax = axes[idx]
+        residuals = np.array(y_test) - predictions[name]
+        ax.scatter(predictions[name], residuals, alpha=0.5, color='darkorange', s=25)
+        ax.axhline(0, color='red', linestyle='--', linewidth=1.5)
+        ax.set_title(name)
+        ax.set_xlabel("Predicted Loan Amount (₹)")
+        ax.set_ylabel("Residual (Actual − Predicted)")
+    plt.suptitle("Residuals vs Predicted Values", fontsize=14, fontweight='bold')
+    plt.tight_layout()
+    st.pyplot(fig)
+    plt.close(fig)
+
+    # ── Error Distribution ─────────────────────────────────────────────────────
+    st.markdown("---")
+    st.subheader("📊 Error Distribution — All Models")
+    fig, axes = plt.subplots(2, 2, figsize=(14, 8))
+    axes = axes.flatten()
+    for idx, name in enumerate(model_names):
+        ax = axes[idx]
+        residuals = np.array(y_test) - predictions[name]
+        ax.hist(residuals, bins=20, color='mediumpurple', edgecolor='white')
+        ax.axvline(0, color='red', linestyle='--')
+        ax.set_title(name)
+        ax.set_xlabel("Residual (₹)")
+        ax.set_ylabel("Frequency")
+    plt.suptitle("Prediction Error Distribution", fontsize=14, fontweight='bold')
+    plt.tight_layout()
+    st.pyplot(fig)
+    plt.close(fig)
+
+    # ── Confusion Matrices ─────────────────────────────────────────────────────
+    st.markdown("---")
+    st.subheader("🟩 Confusion Matrices — Loan Amount Category (Low / Medium / High)")
+    st.caption(
+        "Since this is a regression problem, predicted loan amounts are binned into "
+        "**Low** (bottom 33%), **Medium** (middle 33%), and **High** (top 33%) "
+        "categories to visualise classification-like performance."
+    )
+    class_labels = ['Low', 'Medium', 'High']
+    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+    axes = axes.flatten()
+    for idx, name in enumerate(model_names):
+        ax = axes[idx]
+        cm = confusion_matrix(y_test_binned, pred_binned[name], labels=class_labels)
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=class_labels)
+        disp.plot(ax=ax, colorbar=False, cmap='Blues')
+        ax.set_title(name)
+    plt.suptitle("Confusion Matrices — Loan Amount Category", fontsize=14, fontweight='bold')
+    plt.tight_layout()
+    st.pyplot(fig)
+    plt.close(fig)
+
+    # ── Per-Class Accuracy Table ───────────────────────────────────────────────
+    st.subheader("📋 Per-Class Accuracy Summary")
+    acc_rows = []
+    for name in model_names:
+        cm = confusion_matrix(y_test_binned, pred_binned[name], labels=class_labels)
+        for i, lbl in enumerate(class_labels):
+            precision = cm[i, i] / cm[:, i].sum() if cm[:, i].sum() > 0 else 0
+            recall    = cm[i, i] / cm[i, :].sum() if cm[i, :].sum() > 0 else 0
+            acc_rows.append({'Model': name, 'Category': lbl,
+                             'Precision': round(precision, 3), 'Recall': round(recall, 3)})
+    acc_df = pd.DataFrame(acc_rows)
+    st.dataframe(
+        acc_df.style.background_gradient(subset=['Precision', 'Recall'], cmap='Greens'),
+        use_container_width=True
+    )
 
 
 # ══════════════════════════════════════════════════════════════════════════════
