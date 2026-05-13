@@ -1,6 +1,16 @@
 # 🏠 Home Loan Amount Prediction
 
-A machine learning project that predicts the eligible home loan amount for an applicant based on income, property value, interest rate, and tenure. Includes a full data analysis pipeline and an interactive **Streamlit** web application.
+A machine learning project that predicts the eligible home loan amount for an applicant based on income, property value, interest rate, and tenure, built as part of a thesis entitled "Prediction of Home Loan Amount in RBBL using Machine Learning" in partial fulfillment of the requirements for the Degree of Master of Science in Information System Engineering at Purbanchal University School of Engineering, Nepal. The thesis is currently in progress and will be defended soon.
+
+
+---
+
+## 👤 Author
+**Author:** Mrs. Avin Chettri  
+**Thesis Supervisor:** Prof. Raj Kumar Thakur
+**Email of Thesis Supervisor:** rajkshiva1@gmail.com .  Includes a full data analysis pipeline and an interactive **Streamlit** web application.
+
+Repository: [rajaramayan/Home-Loan-Prediction](https://github.com/rajaramayan/Home-Loan-Prediction)
 
 ---
 
@@ -151,9 +161,4 @@ Then open **http://localhost:8501** in your browser.
 | Tenure | 180 months (15 years) |
 | **Predicted Loan Amount** | **₹29,78,201.90** |
 
----
 
-## 👨‍💻 Author
-
-**Abin** — Thesis Project, 2026  
-Repository: [rajaramayan/Home-Loan-Prediction](https://github.com/rajaramayan/Home-Loan-Prediction)
