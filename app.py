@@ -110,11 +110,16 @@ def preprocess_and_train():
         predictions[name] = model.predict(X_test)
 
     # Bin actual and predicted into Low / Medium / High for confusion matrices
-    bins = [y_test.min() - 1, y_test.quantile(0.33), y_test.quantile(0.66), y_test.max() + 1]
+    q33 = float(y_test.quantile(0.33))
+    q66 = float(y_test.quantile(0.66))
+    bins = [float(y_test.min()) - 1, q33, q66, float(y_test.max()) + 1]
     labels = ['Low', 'Medium', 'High']
-    y_test_binned = pd.cut(y_test, bins=bins, labels=labels)
+    y_test_binned = pd.cut(y_test, bins=bins, labels=labels).astype(str)
     pred_binned = {
-        name: pd.cut(pd.Series(preds, index=y_test.index), bins=bins, labels=labels)
+        name: pd.cut(
+            pd.Series(preds, index=y_test.index).clip(bins[0] + 1, bins[-1] - 1),
+            bins=bins, labels=labels
+        ).astype(str)
         for name, preds in predictions.items()
     }
 
