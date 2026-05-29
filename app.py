@@ -399,10 +399,10 @@ elif page == "📈 Model Evaluation":
     st.subheader("RMSE Comparison")
     fig, ax = plt.subplots(figsize=(8, 4))
     ax.barh(results_df.index, results_df['CV Mean RMSE'], color='#e67e22')
-    ax.set_xlabel("CV Mean RMSE (रू)")
+    ax.set_xlabel("CV Mean RMSE (Rs.)")
     ax.set_title("Cross-Validated RMSE by Model")
     for i, v in enumerate(results_df['CV Mean RMSE']):
-        ax.text(v + 500, i, f"रू{v:,.0f}", va='center')
+        ax.text(v + 500, i, f"Rs.{v:,.0f}", va='center')
     st.pyplot(fig)
     plt.close(fig)
 
@@ -420,8 +420,8 @@ elif page == "📈 Model Evaluation":
         mx = max(y_test.max(), y_pred.max())
         ax.plot([mn, mx], [mn, mx], 'r--', linewidth=1.5, label='Perfect fit')
         ax.set_title(name)
-        ax.set_xlabel("Actual Loan Amount (रू)")
-        ax.set_ylabel("Predicted Loan Amount (रू)")
+        ax.set_xlabel("Actual Loan Amount (Rs.)")
+        ax.set_ylabel("Predicted Loan Amount (Rs.)")
         r2 = results_df.loc[name, 'Test R²']
         ax.legend(title=f"R² = {r2}")
     plt.suptitle(
@@ -445,7 +445,7 @@ elif page == "📈 Model Evaluation":
         )
         ax.axhline(0, color='red', linestyle='--', linewidth=1.5)
         ax.set_title(name)
-        ax.set_xlabel("Predicted Loan Amount (रू)")
+        ax.set_xlabel("Predicted Loan Amount (Rs.)")
         ax.set_ylabel("Residual (Actual − Predicted)")
     plt.suptitle(
         "Residuals vs Predicted Values", fontsize=14, fontweight='bold'
@@ -465,7 +465,7 @@ elif page == "📈 Model Evaluation":
         ax.hist(residuals, bins=20, color='mediumpurple', edgecolor='white')
         ax.axvline(0, color='red', linestyle='--')
         ax.set_title(name)
-        ax.set_xlabel("Residual (रू)")
+        ax.set_xlabel("Residual (Rs.)")
         ax.set_ylabel("Frequency")
     plt.suptitle(
         "Prediction Error Distribution", fontsize=14, fontweight='bold'
