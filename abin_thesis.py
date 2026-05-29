@@ -1,11 +1,23 @@
-import pandas as pd
-import numpy as np
 import warnings
+
+import joblib
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import seaborn as sns
+from scipy.stats import skew
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import (
+    mean_absolute_error, mean_squared_error, r2_score
+)
+from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.tree import DecisionTreeRegressor
+
 warnings.filterwarnings("ignore")
 
-# ── Load Data ──────────────────────────────────────────────────────────────────
+# ── Load Data ───────────────────────────────────────────────────────────────
 # from google.colab import drive
 # drive.mount('/content/drive')
 
@@ -55,8 +67,7 @@ df['LoanStatus'].value_counts()
 
 df.head()
 
-# ── Visualisations ─────────────────────────────────────────────────────────────
-import matplotlib.pyplot as plt
+# ── Visualisations ───────────────────────────────────────────────────────────
 
 marital_counts = df['MartialStatus'].value_counts()
 
@@ -126,10 +137,13 @@ plt.ylabel("Count")
 plt.xticks(rotation=45)
 plt.show()
 
-# ── Feature Engineering ────────────────────────────────────────────────────────
+# ── Feature Engineering ──────────────────────────────────────────────────────
 
 # Removing Unnecessary Features
-df = df.drop(['Gender', 'MartialStatus', 'Age', 'Education', 'LoanType', 'LoanStatus'], axis=1)
+df = df.drop(
+    ['Gender', 'MartialStatus', 'Age', 'Education', 'LoanType', 'LoanStatus'],
+    axis=1
+)
 df.head()
 
 df['TotalIncome'] = df['ClientIncome'] + df['FamilyIncome']
@@ -152,15 +166,22 @@ df.describe()
 df['MaxEmi'] = df['TotalIncome'] / 2
 df.head()
 
+
 def calculate_max_loan(max_emi, interest_rate, tenure_months):
-    if tenure_months <= 0 or interest_rate <= 0:  # Handle invalid values
+    if tenure_months <= 0 or interest_rate <= 0:
         return 0
-    monthly_rate = interest_rate / 1200  # Convert annual interest rate to monthly
-    factor = ((1 + monthly_rate) ** tenure_months - 1) / (monthly_rate * (1 + monthly_rate) ** tenure_months)
+    monthly_rate = interest_rate / 1200
+    factor = (
+        ((1 + monthly_rate) ** tenure_months - 1)
+        / (monthly_rate * (1 + monthly_rate) ** tenure_months)
+    )
     return max_emi * factor
 
+
 df['MaxLoanAmount'] = df.apply(
-    lambda row: calculate_max_loan(row['MaxEmi'], row['InterestRate'], row['Tenure']),
+    lambda row: calculate_max_loan(
+        row['MaxEmi'], row['InterestRate'], row['Tenure']
+    ),
     axis=1
 )
 
@@ -182,10 +203,7 @@ df.columns
 num_features = ['HomeValue', 'Emi', 'InterestRate', 'Tenure',
                 'TotalIncome', 'MaxEmi', 'MaxLoanAmount', 'EligibleLoanAmount']
 
-# ── Scatter Plots: numeric features vs LoanAmount ─────────────────────────────
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
+# ── Scatter Plots: numeric features vs LoanAmount ───────────────────────────
 
 for feature in num_features:
     plt.figure(figsize=(7, 5))
@@ -194,17 +212,17 @@ for feature in num_features:
     plt.tight_layout()
     plt.show()
 
-import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-
 df = df.reset_index()
 
 plt.figure(figsize=(10, 7))
-scatter = plt.scatter(df['HomeValue'], df['LoanAmount'], c=df.index, cmap='viridis', s=50)
+scatter = plt.scatter(
+    df['HomeValue'], df['LoanAmount'], c=df.index, cmap='viridis', s=50
+)
 
 for i, row in df.iterrows():
-    plt.text(row['HomeValue'], row['LoanAmount'], str(i), fontsize=8, alpha=0.7)
+    plt.text(
+            row['HomeValue'], row['LoanAmount'], str(i), fontsize=8, alpha=0.7
+        )
 
 plt.title('LoanAmount vs HomeValue (Colored and Labeled by Index)')
 plt.xlabel('Home Value')
@@ -214,10 +232,9 @@ plt.grid(True)
 plt.tight_layout()
 plt.show()
 
-# ── Outlier Handling ───────────────────────────────────────────────────────────
+# ── Outlier Handling ─────────────────────────────────────────────────────────
 
 # HomeValue Outliers
-import seaborn as sns
 sns.boxplot(df['HomeValue'])
 plt.title('HomeValue with Outliers')
 plt.xlabel('HomeValue')
@@ -234,12 +251,10 @@ df[df['HomeValue'] < lower_limit]
 df1 = df[(df['HomeValue'] >= lower_limit) & (df['HomeValue'] <= upper_limit)]
 df1.shape
 
-import seaborn as sns
 sns.boxplot(df1['HomeValue'])
 plt.title('HomeValue After Removing Outliers')
 plt.show()
 
-import seaborn as sns
 sns.boxplot(df1['TotalIncome'])
 plt.title('TotalIncome with Outliers')
 plt.show()
@@ -252,20 +267,18 @@ upper_limit = percentile75 + 1.5 * iqr
 lower_limit = percentile25 - 1.5 * iqr
 df1[df1['TotalIncome'] > upper_limit]
 df1[df1['TotalIncome'] < lower_limit]
-nf = df1[(df1['TotalIncome'] >= lower_limit) & (df1['TotalIncome'] <= upper_limit)]
+nf = df1[
+    (df1['TotalIncome'] >= lower_limit) & (df1['TotalIncome'] <= upper_limit)
+]
 nf.shape
 
-import seaborn as sns
 sns.boxplot(nf['TotalIncome'])
 plt.title('TotalIncome with Outliers')
 plt.show()
 
-# ── Separating Output and Input Features ──────────────────────────────────────
+# ── Separating Output and Input Features ────────────────────────────────────
 
 df.head()
-
-import seaborn as sns
-import matplotlib.pyplot as plt
 
 plt.figure(figsize=(12, 8))
 sns.heatmap(df.corr(numeric_only=True), annot=True, cmap='coolwarm', fmt=".2f")
@@ -275,7 +288,10 @@ plt.show()
 y = nf['LoanAmount']
 y.shape
 
-key_features = ['HomeValue', 'InterestRate', 'Tenure', 'TotalIncome', 'MaxEmi', 'MaxLoanAmount', 'EligibleLoanAmount']
+key_features = [
+    'HomeValue', 'InterestRate', 'Tenure', 'TotalIncome',
+    'MaxEmi', 'MaxLoanAmount', 'EligibleLoanAmount'
+]
 key_features
 
 X = nf[key_features]
@@ -285,9 +301,11 @@ X.head()
 
 X
 
-# ── Normalisation Step ─────────────────────────────────────────────────────────
+# ── Normalisation Step ───────────────────────────────────────────────────────
 
-log_features = ['HomeValue', 'TotalIncome', 'MaxEmi', 'MaxLoanAmount', 'EligibleLoanAmount']
+log_features = [
+    'HomeValue', 'TotalIncome', 'MaxEmi', 'MaxLoanAmount', 'EligibleLoanAmount'
+]
 log_features
 
 X_transform = X.copy()
@@ -296,15 +314,12 @@ X_transform.columns
 
 X_transform.shape
 
-from scipy.stats import skew
 skewness = skew(X['TotalIncome'])
 skewness
 
-from scipy.stats import skew
 skewness = skew(np.log1p(X['TotalIncome']))
 skewness
 
-import matplotlib.pyplot as plt
 plt.hist(X['TotalIncome'], bins=30)
 plt.show()
 
@@ -312,8 +327,9 @@ plt.show()
 X_transform[log_features] = np.log1p(X[log_features])
 X_transform
 
-from sklearn.model_selection import train_test_split
-X_train, X_test, y_train, y_test = train_test_split(X_transform, y, test_size=0.2, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(
+    X_transform, y, test_size=0.2, random_state=42
+)
 
 X_test.shape
 
@@ -323,15 +339,7 @@ X_train.shape
 
 y_train.shape
 
-# ── Model Training ─────────────────────────────────────────────────────────────
-import numpy as np
-import pandas as pd
-from sklearn.linear_model import LinearRegression
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.neighbors import KNeighborsRegressor
-from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
-from sklearn.model_selection import train_test_split
+# ── Model Training ───────────────────────────────────────────────────────────
 
 # Initialize models
 models = {
@@ -365,22 +373,6 @@ results_df = pd.DataFrame(results).T
 print("Model Evaluation Results:")
 print(results_df)
 
-from sklearn.model_selection import cross_val_score
-from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-import numpy as np
-import pandas as pd
-
-# Initialize models
-models = {
-    'Linear Regression': LinearRegression(),
-    'Decision Tree': DecisionTreeRegressor(random_state=42),
-    'Random Forest': RandomForestRegressor(random_state=42),
-    'knn': KNeighborsRegressor(n_neighbors=5)
-}
-
-# Dictionary to store evaluation results
-results = {}
-
 # Number of folds
 k = 5
 
@@ -397,8 +389,12 @@ for name, model in models.items():
 
     # Cross-Validation Scores
     cv_r2 = cross_val_score(model, X, y, cv=k, scoring='r2')
-    cv_mae = cross_val_score(model, X, y, cv=k, scoring='neg_mean_absolute_error')
-    cv_rmse = cross_val_score(model, X, y, cv=k, scoring='neg_root_mean_squared_error')
+    cv_mae = cross_val_score(
+        model, X, y, cv=k, scoring='neg_mean_absolute_error'
+    )
+    cv_rmse = cross_val_score(
+        model, X, y, cv=k, scoring='neg_root_mean_squared_error'
+    )
 
     results[name] = {
         'Test R2': r2,
@@ -421,13 +417,12 @@ best_model_rmse = min(results.items(), key=lambda x: x[1]['Test RMSE'])[0]
 print(f"Best Model based on Test RMSE: {best_model_rmse}")
 
 # Save the Random Forest model
-import joblib
 joblib.dump(models['Random Forest'], 'random_regresser.joblib')
 
 # Load the saved model
 random_model = joblib.load('random_regresser.joblib')
 
-# ── Prediction on New Data ─────────────────────────────────────────────────────
+# ── Prediction on New Data ───────────────────────────────────────────────────
 af = pd.DataFrame({
     'HomeValue': [5000000],
     'TotalIncome': [77000],
@@ -440,13 +435,11 @@ af['MaxEmi'] = af['TotalIncome'] / 2
 af['EligibleLoanAmount'] = af['HomeValue'] * 0.7
 af
 
-def calculate_max_loan(max_emi, interest_rate, tenure_months):
-    monthly_rate = interest_rate / 12
-    factor = ((1 + monthly_rate) ** tenure_months - 1) / (monthly_rate * (1 + monthly_rate) ** tenure_months)
-    return max_emi * factor
 
 af['MaxLoanAmount'] = af.apply(
-    lambda row: calculate_max_loan(row['MaxEmi'], row['InterestRate'], row['Tenure']),
+    lambda row: calculate_max_loan(
+        row['MaxEmi'], row['InterestRate'], row['Tenure']
+    ),
     axis=1
 )
 af
@@ -462,7 +455,10 @@ bf['EligibleLoanAmount'] = np.log1p(bf['EligibleLoanAmount'])
 bf['MaxLoanAmount'] = np.log1p(bf['MaxLoanAmount'])
 bf
 
-f_features = ['HomeValue', 'InterestRate', 'Tenure', 'TotalIncome', 'MaxEmi', 'MaxLoanAmount', 'EligibleLoanAmount']
+f_features = [
+    'HomeValue', 'InterestRate', 'Tenure', 'TotalIncome',
+    'MaxEmi', 'MaxLoanAmount', 'EligibleLoanAmount'
+]
 f_features
 
 cf = bf[f_features]

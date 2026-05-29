@@ -157,10 +157,10 @@ Then open **http://localhost:8501** in your browser.
 
 | Input | Value |
 |---|---|
-| Home Value | ₹50,00,000 |
-| Monthly Total Income | ₹77,000 |
+| Home Value | रू50,00,000 |
+| Monthly Total Income | रू77,000 |
 | Interest Rate | 10.3% |
 | Tenure | 180 months (15 years) |
-| **Predicted Loan Amount** | **₹29,78,201.90** |
+| **Predicted Loan Amount** | **रू29,78,201.90** |
 
 
