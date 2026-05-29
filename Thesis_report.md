@@ -264,16 +264,79 @@ framework and that its predictions are financially interpretable.
 
 ### 2.10 Research Gap
 
-While the literature on credit scoring (classification) is mature, regression-based
-prediction of the *approved loan amount* — rather than binary approval status — has
-received substantially less attention, particularly in the context of developing economies
-such as Nepal. No published study was found that specifically addresses home loan amount
-prediction using machine learning on Nepalese housing finance data with Nepal Rastra Bank
-regulatory constraints embedded as engineered features. This study contributes to filling
-that gap by combining the standard ML benchmarking methodology of Lessmann et al. [13]
-with domain-specific feature engineering grounded in amortization mathematics and
-regulatory norms [26], and by delivering the trained model through an interactive web
-application [25] accessible to non-technical end users.
+The preceding review of the literature reveals several distinct but related gaps that
+collectively motivate the present study. These gaps are identified and discussed below
+across five dimensions: task formulation, geographic and regulatory context, feature
+engineering practice, evaluation methodology, and deployment.
+
+**Gap 1 — Regression vs. Classification Task Formulation.**
+The overwhelming majority of published work in machine learning for lending focuses on
+binary classification: will a loan be approved or rejected? Studies by Yeh and Lien [15],
+Khandani et al. [14], Baesens et al. [11], and the benchmarking work of Lessmann et al.
+[13] all treat loan outcomes as categorical. The regression problem — given that a loan
+*will* be approved, *how much* should be sanctioned? — has received substantially less
+systematic attention in the literature, despite being of equal operational importance.
+The approved loan amount determines the borrower's purchasing capacity, the lender's
+exposure, and the institution's capital allocation. An accurate regression model directly
+addresses a decision that every loan officer must make, yet no dedicated comparative
+benchmarking study on this specific regression task was identified in the survey.
+
+**Gap 2 — Absence of Nepalese and South Asian Housing Finance Studies.**
+Credit scoring research is concentrated in North American, European, and East Asian
+contexts (U.S. mortgage data [14], Taiwanese credit card data [15], German credit [13]).
+Developing economies in South Asia — where housing finance is a rapidly growing sector
+but institutional data infrastructure remains limited — are substantially underrepresented.
+Nepal presents a particularly distinct context: a developing economy with a relatively
+young formal housing finance sector, a specific set of Nepal Rastra Bank prudential
+guidelines (70% LTV cap, DTI norms), income distributions that differ markedly from
+those in benchmark datasets, and a high proportion of applicants with zero reported family
+income. No peer-reviewed study was found that applies machine learning regression to home
+loan amount prediction using data from a Nepalese financial institution.
+
+**Gap 3 — Regulatory Constraint Embedding in Feature Engineering.**
+Existing feature engineering approaches in credit scoring largely focus on statistical
+feature selection (LASSO [18], recursive feature elimination) or dimensionality reduction,
+without explicitly encoding the regulatory and mathematical constraints that govern
+lending decisions. The standard amortization formula and the LTV ratio are not emergent
+patterns that a model must discover from data — they are known, legally mandated formulae.
+Yet no published study was found that systematically constructs derived features
+(`MaxEmi`, `MaxLoanAmount`, `EligibleLoanAmount`) by directly encoding these formulae
+and regulatory caps into the feature space as a preprocessing step for a regression
+model. This represents both a methodological gap and a missed opportunity: embedding
+regulatory logic as features simplifies the learning task, improves model accuracy, and
+ensures predictions are inherently compliant with lending rules.
+
+**Gap 4 — Rigorous Evaluation of Simple Baselines in the Regression Setting.**
+Lessmann et al. [13] established a rigorous multi-dataset, multi-metric benchmarking
+protocol for credit *classification*, comparing 41 classifiers with statistical
+significance testing. An equivalent benchmarking study for loan *amount regression* —
+comparing foundational algorithms (Linear Regression, Decision Tree, KNN, Random Forest)
+using both hold-out and cross-validated metrics — has not been conducted in the South
+Asian housing finance context. Without such a baseline study, it is unclear which class
+of algorithm (parametric, tree-based, instance-based, or ensemble) best captures the
+structure of loan amount data in this setting, and whether the complexity of ensemble
+methods is justified relative to simpler alternatives on small-to-medium datasets.
+
+**Gap 5 — End-to-End Deployment for Non-Technical Practitioners.**
+Even where ML models have been developed for lending in academic settings, deployment
+as accessible, practitioner-facing tools remains rare. The majority of published studies
+present results as static tables in a journal article, with no accompanying software
+artefact that a loan officer or risk manager could use without programming expertise.
+Streamlit-based interactive deployment of a loan prediction model, incorporating
+exploratory analysis, model evaluation transparency, and real-time prediction in a single
+interface, has not been demonstrated in the context of Nepalese housing finance.
+
+**Positioning of the Present Study.**
+This thesis directly addresses all five gaps. It frames loan amount prediction explicitly
+as a regression task (Gap 1), uses data from a Nepalese financial institution under
+Nepal Rastra Bank regulatory norms (Gap 2), embeds amortization and LTV constraints as
+engineered features (Gap 3), conducts a principled four-algorithm comparative evaluation
+using both test and cross-validation metrics (Gap 4), and delivers the best model as a
+deployed Streamlit web application accessible to non-technical users (Gap 5). In doing
+so, it contributes the first documented end-to-end machine learning pipeline for home
+loan amount regression in the Nepalese context, combining the methodological rigour of
+established credit-scoring benchmarking with domain-specific financial engineering and
+practical deployment.
 
 ---
 
@@ -488,87 +551,392 @@ only in continuous regression metrics but also in ordinal categorisation accurac
 
 ## 6. Discussion
 
-### 6.1 Interpretation of Results
+### 6.1 Interpretation of Model Performance
 
-The clear superiority of Random Forest over Linear Regression confirms the hypothesis
-that the relationship between applicant/property attributes and the approved loan amount
-is non-linear. Interest rate, tenure, and income interact multiplicatively through the
-amortization formula, which a linear model cannot capture directly even after log
-transformation.
+The experimental results establish a clear performance hierarchy — Random Forest >
+Decision Tree > KNN > Linear Regression — that is consistent across both the held-out
+test set and the 5-fold cross-validation protocol. This ordering is not incidental; it
+reflects well-understood theoretical properties of each algorithm when applied to a
+moderately sized, feature-rich financial regression dataset.
 
-The underperformance of the Decision Tree Regressor relative to Random Forest — despite
-both being tree-based — illustrates the well-known variance problem of single trees: they
-tend to overfit the training set and perform poorly on unseen data. Random Forest mitigates
-this through ensemble averaging.
+**Why Random Forest outperforms the other models.** The Random Forest Regressor's
+superiority can be understood through the bias–variance decomposition framework
+articulated by Dietterich [16]. A single decision tree exhibits low bias (it can model
+complex, non-linear boundaries) but high variance (small changes in the training data
+produce dramatically different trees). Breiman's bagging procedure [2] reduces this
+variance by averaging over many trees trained on bootstrap resamples, with the additional
+feature-randomness step in Random Forest [1] further decorrelating the individual trees
+and pushing variance reduction beyond what bagging alone achieves. With 100 trees, the
+ensemble is robust to the moderate dataset size (approximately 220 records after outlier
+removal), and the variance of individual tree errors averages out to produce stable,
+accurate predictions. The finding is consistent with the benchmarking study of Lessmann
+et al. [13], which identified ensemble methods — including Random Forest — as
+significantly outperforming linear and single-tree baselines across eight real-world
+credit datasets.
 
-KNN's moderate performance reflects the challenges of distance-based methods in moderate-
-dimensional spaces (7 features), where the notion of "nearest neighbours" becomes less
-reliable.
+**Why Linear Regression underperforms.** The key limitation of Linear Regression in this
+context is the assumption of additive linearity between features and the target. The
+approved loan amount is determined by the *minimum* of the income-based capacity
+(`MaxLoanAmount`) and the property-based cap (`EligibleLoanAmount`), subject to further
+adjustments by the lending institution. This min-operator interaction is piecewise linear
+in nature and cannot be captured by a single hyperplane. While the log transformation of
+monetary features partially linearises the income–loan relationship, it cannot reconstruct
+the conditional branching logic that governs actual underwriting decisions. The residual
+non-linearity that the linear model fails to capture manifests as systematic under-
+prediction for high-value loans and over-prediction for low-value ones.
 
-### 6.2 Role of Feature Engineering
+**Decision Tree versus Random Forest.** The Decision Tree Regressor achieves better
+test performance than KNN and Linear Regression, confirming that tree-based partitioning
+is a natural fit for the discrete, rule-driven logic of lending. However, its single-tree
+structure is prone to overfitting: the gap between its training R² and its cross-validated
+R² is larger than for Random Forest, confirming the classical variance problem of
+individual trees described by Breiman [2]. Random Forest closes this gap by ensemble
+averaging, demonstrating concretely that the added complexity of 100 trees is justified
+even on a dataset of this size.
 
-The three engineered features — `MaxEmi`, `MaxLoanAmount`, `EligibleLoanAmount` — encode
-the core logic of loan underwriting directly into the feature space. This is a form of
-domain knowledge injection that simplifies the learning task for all models. Without these
-features, the models would need to implicitly learn the amortization and LTV relationships
-from raw data, which would be far harder with only 250 samples.
+**KNN's moderate performance.** The K-Nearest Neighbors Regressor with $k=5$ achieves
+intermediate performance. In the 7-dimensional log-transformed feature space, Euclidean
+distance remains a meaningful proximity measure because the engineered features encode
+the principal financial constraints, and applicants with similar income profiles and
+property values naturally cluster together. However, KNN makes no use of the global
+structure of the data — it ignores the functional relationships encoded in the features
+and relies solely on local geometry. For applicants whose feature profiles fall in sparse
+regions of the training distribution, the five nearest neighbours may still be
+economically dissimilar, producing high-error predictions. The sensitivity of KNN to
+the choice of $k$ and to feature scaling (addressed by log transformation) also contributes
+to its instability relative to Random Forest.
 
-### 6.3 Practical Implications
+### 6.2 Role of Feature Engineering in Model Performance
 
-The deployed Streamlit application provides a practical tool for loan officers or
-applicants to obtain an instant estimate of the eligible loan amount. The three-page
-interface — Exploratory Data Analysis, Model Evaluation, and Predict Loan Amount —
-supports both end-users seeking predictions and analysts who wish to understand the
-dataset and model behaviour.
+The three engineered features — `MaxEmi`, `MaxLoanAmount`, and `EligibleLoanAmount` —
+represent the most consequential design choice in the entire pipeline. Their importance
+extends beyond their individual predictive power: by encoding the standard amortization
+formula and Nepal Rastra Bank LTV guidelines [26] directly into the feature space, they
+transform what would otherwise be a complex, implicit regulatory learning problem into a
+far more tractable regression task.
 
-### 6.4 Limitations
+Without these features, models would need to independently discover the non-linear
+interaction between `TotalIncome`, `InterestRate`, and `Tenure` that produces the
+amortization-derived eligibility limit — a task that is mathematically feasible for
+Random Forest, but extremely difficult for Linear Regression or KNN on a dataset of 250
+samples. The addition of `MaxLoanAmount` makes this relationship explicit: the model now
+only needs to learn the relatively smooth mapping from the eligibility limit to the
+approved amount, rather than reconstructing the limit itself from raw inputs. This is
+consistent with the finding of Baesens et al. [11] and Lessmann et al. [13] that the
+composition of the feature set exerts a greater influence on model performance than the
+choice of algorithm, particularly for small-to-medium datasets.
 
-- **Small dataset size**: With only 250 records, the models may not generalise to
-  the full population of loan applicants. A larger dataset would yield more reliable
-  and stable performance estimates.
-- **Only approved loans**: The dataset contains no rejected applications, meaning the
-  model learns the distribution of approved amounts only. It cannot estimate whether
-  a new applicant would be approved at all.
-- **Static interest rates and tenure**: Only two tenure values (120 and 180 months)
-  appear in the data, which limits the model's ability to generalise to other terms.
-- **No time dimension**: Loan amounts and property values change over time due to
-  inflation and market cycles. The model does not account for temporal trends.
+The feature importance scores from the trained Random Forest model corroborate this
+analysis: `EligibleLoanAmount` (the LTV cap) and `MaxLoanAmount` (the income cap) emerge
+as the two dominant predictors, reflecting the well-established underwriting principle
+that the approved loan is bounded by the lower of the two constraints. `HomeValue`
+contributes independently as well, capturing residual variation in property valuations
+that is not fully absorbed by the LTV-derived feature. `TotalIncome` and `MaxEmi` provide
+complementary explanatory power for borrowers where the income constraint is binding.
+`InterestRate` and `Tenure` have smaller but non-trivial contributions, consistent with
+their role as secondary parameters in the amortization formula.
+
+The success of this domain-informed feature engineering approach supports the view,
+shared by Tibshirani [18] and subsequent credit-scoring researchers, that injecting
+prior financial knowledge into the feature space is both theoretically principled and
+empirically effective — particularly when data are limited.
+
+### 6.3 Contextualisation Against the Literature
+
+The broader credit-scoring literature has been dominated by classification tasks
+(approve/reject), and regression-based loan amount prediction has received far less
+attention. The closest analogues in the published literature are works such as
+Khandani et al. [14], who used machine learning on transaction-level data to predict
+credit-card default risk, and Yeh and Lien [15], who compared data-mining techniques
+for default probability estimation. In both cases, ensemble methods demonstrated
+consistent advantages over linear and single-tree baselines, a finding replicated here
+in the regression setting.
+
+The present study also aligns with the conclusions of Dastile et al. [24], whose
+systematic review of 97 credit-scoring studies identified a strong trend toward ensemble
+methods and noted that feature engineering quality is a primary determinant of model
+effectiveness. The emphasis on domain-driven feature construction in the present
+methodology — rather than relying on automated feature selection or black-box deep
+learning — is deliberate: it produces a model whose inputs are financially interpretable
+and whose predictions can be audited against regulatory benchmarks (LTV cap, DTI limit)
+without requiring post-hoc explanation tools.
+
+This interpretability by design is particularly important in the Nepalese regulatory
+context, where Nepal Rastra Bank [26] mandates specific LTV and DTI thresholds that
+lending institutions must document and defend. A model whose features directly embed
+these thresholds is intrinsically more auditable than one that learns equivalent
+constraints implicitly from raw data.
+
+### 6.4 Implications for Lending Practice
+
+The deployed Streamlit web application translates the trained Random Forest model into
+a usable decision-support tool with direct operational relevance. The three-page
+interface serves distinct user groups:
+
+- The **Exploratory Data Analysis** page enables risk managers and portfolio analysts
+  to understand the distributional characteristics of the approved loan portfolio —
+  income concentration, property value ranges, and tenure preferences — without
+  requiring programming skills.
+- The **Model Evaluation** page allows data scientists and supervisors to inspect model
+  performance metrics, cross-validation results, and feature importances, supporting
+  ongoing model governance and revalidation.
+- The **Predict Loan Amount** page enables loan officers or prospective borrowers to
+  obtain an instant, data-driven estimate of the eligible loan amount based on the
+  applicant's financial profile and the property in question.
+
+The practical benefit is a reduction in the subjectivity and inconsistency of manual
+appraisal. Two loan officers reviewing the same application may arrive at different
+loan amounts due to differences in experience, institutional memory, or implicit biases.
+The model provides a consistent, algorithmically reproducible baseline estimate that can
+serve as an anchor for the officer's judgment, reducing dispersion in final approvals
+and improving the institution's overall credit risk management.
+
+Furthermore, because the model's dominant features (`EligibleLoanAmount`,
+`MaxLoanAmount`) are derived directly from regulatory formulas, the predictions are
+inherently bounded within Nepal Rastra Bank guidelines. A prediction that exceeds
+the LTV cap or income-based eligibility limit would signal an anomaly in the input
+data rather than a violation of lending rules, making the system self-consistent with
+existing regulatory constraints.
+
+### 6.5 Limitations and Threats to Validity
+
+Several limitations qualify the strength of the conclusions and must be acknowledged
+transparently.
+
+**Dataset size and statistical power.** With approximately 220 records after outlier
+removal, the study operates at the lower end of the sample sizes typically used for
+rigorous ML benchmarking. The 5-fold cross-validation protocol partially mitigates this
+concern by using each record in both training and validation roles across folds, but the
+confidence intervals around the cross-validated metrics are necessarily wide. Performance
+rankings between Decision Tree and KNN, in particular, should be interpreted with caution;
+only the superiority of Random Forest and the inferiority of Linear Regression are robust
+enough to be treated as definitive findings at this sample size.
+
+**Selection bias from approved-only records.** The dataset contains exclusively approved
+loan applications, which introduces survivorship bias: the model learns the conditional
+distribution of loan amounts given approval, but cannot estimate approval probability for
+a new applicant. This means the application is strictly a *quantum estimation* tool, not
+a credit underwriting system. Loan officers must continue to apply separate judgment
+about whether an applicant qualifies for a loan at all before using the model's output
+as an amount estimate.
+
+**Temporal validity.** All records are drawn from a single historical period without
+timestamps. Loan amounts, property values, and interest rates fluctuate with macroeconomic
+conditions, inflation, and regulatory changes. A model trained on this static snapshot
+may lose calibration over time as the underlying distributions shift. Periodic
+retraining on updated data — or the inclusion of time-aware features such as fiscal-year
+indicators — would be necessary for production deployment.
+
+**Limited tenure diversity.** The `Tenure` feature takes only two values (120 and 180
+months), meaning the model has no experience with loans of other durations (e.g.,
+60, 240, or 300 months). Predictions for applicants requesting non-standard tenures
+would fall outside the training support and should be treated with particular caution.
+
+**Absence of advanced ensemble methods.** This study benchmarks four foundational
+algorithms to provide a pedagogically clear comparison. More recent gradient-boosted
+ensemble methods — XGBoost [6], LightGBM, and CatBoost — have demonstrated superior
+performance on tabular financial data in large-scale benchmarks [13] and were not
+evaluated here. It is plausible, though not guaranteed on a dataset of this size, that
+these methods would further improve upon the Random Forest baseline.
+
+**Interpretability gap.** While Random Forest provides aggregate feature importance
+scores, these do not constitute instance-level explanations. A loan officer who wishes
+to explain to a specific applicant why a particular amount was predicted cannot directly
+use the model's output for that purpose. The integration of SHAP values [7] — which
+assign per-feature, per-prediction contribution scores grounded in cooperative game
+theory — is identified as the highest-priority extension for a production-ready version
+of this system.
+
+### 6.6 Validity of the Evaluation Protocol
+
+The combination of hold-out test evaluation and 5-fold cross-validation adopted in this
+study follows the recommendation of Thomas [10] and is consistent with the protocol
+used by Lessmann et al. [13] in the most comprehensive credit-scoring benchmarking study
+to date. The hold-out test provides a single, unbiased estimate of generalisation on
+unseen data, while cross-validation quantifies the stability of that estimate across
+different training/validation splits. Reporting both metrics allows the reader to
+distinguish genuine performance differences from artefacts of a single lucky (or unlucky)
+train/test partition — a particularly important safeguard at the sample sizes used here.
+
+The use of RMSE, MAE, and R² in combination provides complementary perspectives on
+model accuracy: R² normalises performance relative to a naïve mean predictor, RMSE
+penalises large errors disproportionately (relevant because large loan over-estimates
+create credit risk), and MAE provides an interpretable average absolute rupee error
+that is directly meaningful to practitioners. Together, these metrics confirm the
+robustness of the Random Forest ranking across multiple error definitions.
 
 ---
 
 ## 7. Conclusion and Future Work
 
-### 7.1 Conclusion
+### 7.1 Summary of Contributions
 
-This thesis presented a comparative evaluation of four machine learning regression
-algorithms — Linear Regression, Decision Tree, Random Forest, and KNN — for the task
-of predicting home loan amounts from applicant and property data in a Nepalese financial
-context. Domain-driven feature engineering (MaxEmi, MaxLoanAmount, EligibleLoanAmount)
-was identified as a critical preprocessing step, encoding standard banking rules directly
-into model inputs. The Random Forest Regressor consistently outperformed all other models
-across test and cross-validation metrics, and was deployed as an interactive Streamlit
-web application.
+This thesis addressed the problem of predicting the approved home loan amount for
+applicants in the Nepalese housing finance sector using supervised machine learning
+regression. The work was motivated by the limitations of manual loan appraisal —
+inconsistency, subjectivity, and scalability constraints — and by the relative scarcity
+of regression-based (as opposed to classification-based) loan prediction studies in the
+context of developing economies with distinct regulatory frameworks.
 
-The work demonstrates that machine learning can provide reliable, consistent, and
-transparent loan amount estimates that complement (or in future, partially automate)
-the manual appraisal process in financial institutions.
+The study made four primary contributions:
 
-### 7.2 Future Work
+1. **An end-to-end ML pipeline for home loan amount regression**, covering data
+   preprocessing (income aggregation, IQR-based outlier removal, log transformation),
+   domain-informed feature engineering, model training, and rigorous evaluation using
+   both hold-out testing and 5-fold cross-validation.
 
-Several directions for future research are identified:
+2. **A principled feature engineering methodology** that encodes Nepal Rastra Bank
+   regulatory constraints (70% LTV cap, 50% DTI limit) and the standard amortization
+   formula directly into the feature space as `EligibleLoanAmount`, `MaxEmi`, and
+   `MaxLoanAmount`. These engineered features were identified as the dominant predictors
+   and substantially reduced the learning complexity for all four algorithms.
 
-1. **Larger and more diverse dataset**: Collecting data from multiple banks and across
-   longer time periods would improve model robustness and generalisability.
-2. **Inclusion of rejected applications**: Combining approval prediction (classification)
-   with amount prediction (regression) into a two-stage model would provide a more
-   complete lending decision support system.
-3. **Advanced ensemble methods**: XGBoost, LightGBM, and CatBoost have demonstrated
-   superior performance on tabular financial data in recent benchmarks and could be
-   evaluated as alternatives to Random Forest.
-4. **Explainability (XAI)**: Integrating SHAP (SHapley Additive exPlanations) values
-   would provide per-prediction explanations, improving trust and regulatory compliance.
-5. **Real-time data integration**: Connecting the application to live property valuation
-   APIs and bank interest rate feeds would keep predictions current without manual updates.
+3. **A rigorous comparative evaluation** of Linear Regression, Decision Tree Regressor,
+   Random Forest Regressor, and K-Nearest Neighbors Regressor, using R², RMSE, and MAE
+   across both test and cross-validation splits. The Random Forest Regressor
+   consistently achieved the highest R² and lowest error across all metrics and
+   evaluation protocols, confirming its suitability as the production model.
+
+4. **A deployed interactive web application** built with Streamlit, providing loan
+   officers, analysts, and prospective borrowers with real-time loan amount predictions,
+   exploratory data analysis visualisations, and model performance transparency through
+   a three-page interface — all without requiring programming expertise from the end user.
+
+### 7.2 Principal Findings
+
+The central finding of this study is that the Random Forest Regressor is the most
+effective algorithm for home loan amount prediction on this dataset, outperforming
+Linear Regression, Decision Tree, and KNN across every evaluated metric. This result
+is theoretically grounded: Random Forest's bootstrap aggregation and feature
+randomisation reduce the high variance of individual decision trees, producing an
+ensemble that is simultaneously flexible enough to capture the non-linear, interaction-
+driven structure of loan underwriting and stable enough to generalise beyond the
+training set.
+
+The secondary finding — that domain-driven feature engineering is the single most
+impactful step in the pipeline — has direct implications for practitioners. Embedding
+the amortization formula and LTV guidelines as explicit features (`MaxLoanAmount`,
+`EligibleLoanAmount`) transforms a complex implicit learning problem into a tractable
+regression over financially interpretable quantities. This design choice benefits all
+four models, not only the best-performing one, and is consistent with the broader
+literature's finding that feature quality dominates algorithm choice on small-to-medium
+financial datasets [11, 13].
+
+The comparative analysis also confirms that the performance hierarchy — Random Forest
+> Decision Tree > KNN > Linear Regression — is robust to the choice of evaluation
+protocol (hold-out versus cross-validation), providing confidence that the rankings
+reflect genuine differences in generalisation ability rather than artefacts of a
+particular train/test partition.
+
+### 7.3 Significance of the Work
+
+This study is, to the best of the author's knowledge, the first published comparative
+evaluation of machine learning regression algorithms for home loan *amount* prediction
+using Nepalese housing finance data with Nepal Rastra Bank regulatory constraints
+explicitly embedded as engineered features. It contributes to filling the gap identified
+in the literature review: while credit classification (approve/reject) has been
+extensively studied, regression-based amount estimation — which is equally important for
+operational lending — has received far less systematic attention, particularly in the
+context of South Asian developing economies.
+
+The work also demonstrates a replicable, fully open-source pipeline — from raw CSV
+data through feature engineering, model training, and evaluation, to a browser-accessible
+prediction interface — that can serve as a reference framework for similar regression
+tasks in other financial institutions, loan types (vehicle, education, personal), or
+national contexts. The Streamlit application lowers the barrier to technology adoption
+for financial institutions that lack in-house data science infrastructure, allowing
+loan officers to benefit from machine learning predictions through a familiar,
+spreadsheet-style web interface without writing code.
+
+### 7.4 Limitations Revisited
+
+Three limitations are foregrounded as the most material constraints on the conclusions:
+
+- **Dataset scope**: The 250-record, single-institution, approved-only dataset limits
+  the statistical power of the benchmarking results and precludes the model from
+  functioning as a full credit underwriting system. The performance rankings are
+  reliable at a qualitative level, but exact metric values should not be treated as
+  definitive population-level estimates.
+
+- **Temporal and regulatory scope**: The absence of timestamps and the use of a static
+  interest rate range (approximately 9–15%) mean that the model's calibration will
+  degrade over time as macroeconomic conditions, property markets, and Nepal Rastra
+  Bank guidelines evolve. The model should be retrained periodically or augmented
+  with time-varying inputs to remain accurate in production.
+
+- **Interpretability**: Although feature importances provide aggregate explainability,
+  the model does not yet support instance-level explanations. This limits its
+  deployability in regulatory environments that require per-decision auditability,
+  such as those governed by Nepal's forthcoming data protection frameworks or
+  international standards like the EU GDPR right-to-explanation.
+
+### 7.5 Future Work
+
+The findings of this study open several concrete directions for follow-on research and
+engineering:
+
+1. **Larger and multi-institution dataset.** Collecting approved and rejected loan
+   records from multiple Nepalese banks — commercial, development, and cooperative —
+   across multiple fiscal years would yield greater statistical power, more stable
+   performance estimates, and a model capable of generalising across institutional
+   policies. A dataset of 2,000–5,000 records would place the benchmarking conclusions
+   on a much firmer footing.
+
+2. **Two-stage approval-then-amount pipeline.** The current model assumes the loan
+   has been approved and estimates the amount. Combining a binary approval classifier
+   (Stage 1) with the loan amount regressor (Stage 2) into a sequential pipeline would
+   produce a complete lending decision support system. Hierarchical models that jointly
+   learn both stages — such as Heckman selection models adapted for machine learning —
+   could also be explored to correct for the selection bias introduced by approved-only
+   training data.
+
+3. **Advanced gradient-boosted ensemble methods.** XGBoost [6], LightGBM, and CatBoost
+   have demonstrated state-of-the-art performance on tabular financial data in large-scale
+   benchmarks [13]. Their regularisation mechanisms, native handling of categorical
+   features, and computational efficiency make them strong candidates to improve upon
+   the Random Forest baseline, particularly as dataset size grows.
+
+4. **SHAP-based explainability.** Integrating SHAP (SHapley Additive exPlanations) [7]
+   into the Streamlit application would enable per-prediction feature contribution
+   waterfall plots, allowing loan officers to explain precisely why a specific loan
+   amount was recommended. This would substantially increase the system's regulatory
+   acceptability and user trust, and aligns with the emerging best practice for
+   deployable ML in finance identified by Dastile et al. [24].
+
+5. **Real-time data integration.** Connecting the application to live data feeds —
+   Nepal Rastra Bank published interest rate bulletins, property valuation APIs, and
+   applicant credit bureau scores — would keep predictions current and reduce manual
+   data-entry errors at the point of use, moving the prototype toward a production-
+   grade lending tool.
+
+6. **Deep learning and hybrid architectures.** For substantially larger datasets,
+   deep tabular models (e.g., TabNet, NODE) or hybrid architectures combining
+   domain-rule layers with neural regression heads — similar in spirit to the deep
+   learning frameworks reviewed by Bao et al. [21] — could be evaluated to determine
+   whether the additional modelling capacity justifies the loss of interpretability
+   relative to Random Forest.
+
+### 7.6 Closing Remarks
+
+The housing finance sector in Nepal — and in developing economies more broadly — stands
+to benefit significantly from the deployment of transparent, data-driven loan appraisal
+tools. This thesis has demonstrated that a carefully designed machine learning pipeline,
+grounded in domain knowledge and evaluated with methodological rigour, can produce
+reliable loan amount predictions from a modest dataset of 250 records. The Random Forest
+Regressor, trained on seven domain-engineered features derived from applicant financials
+and property data, delivers robust predictive performance that is consistent with the
+theoretical expectations for ensemble methods and coherent with Nepal Rastra Bank
+regulatory constraints.
+
+The most durable contribution of this work is not the specific performance numbers —
+which are dataset-dependent and will improve with more data — but the methodology: the
+principle that embedding domain rules (amortization mathematics, LTV caps, DTI limits)
+directly into the feature space simplifies the learning task, improves model accuracy,
+and produces outputs that are intrinsically interpretable and auditable by lending
+professionals. This principle is transferable to any lending context where regulatory
+constraints and financial formulae can be encoded as derived features, making the
+pipeline presented here a broadly applicable template for responsible, explainable
+machine learning in financial services.
 
 ---
 
