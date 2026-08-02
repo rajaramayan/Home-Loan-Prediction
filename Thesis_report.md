@@ -88,222 +88,444 @@ to other countries with different regulatory frameworks or income distributions.
 
 ---
 
-## 2. Literature Review
+**Chapter 2: Literature Review**
 
-### 2.1 Credit Risk Assessment: Historical Foundations
+**2.1 Introduction to Home Loan Prediction**
 
-The quantitative assessment of credit risk has a long history in financial research.
-Altman [8] introduced the Z-score model using discriminant analysis to predict corporate
-bankruptcy from financial ratios, establishing the principle that financial data can be
-combined mathematically to produce actionable risk scores. This foundational work
-directly influenced the evolution of consumer credit scoring. Hand and Henley [9]
-provided a comprehensive review of statistical classification methods in consumer credit
-scoring, surveying techniques from linear discriminant analysis and logistic regression
-through to neural networks, and concluding that no single method dominates across all
-datasets. Thomas [10] extended this survey to include behavioural scoring — assessing
-ongoing risk after loan approval — and emphasised the need for robust evaluation
-methodologies including cross-validation, a recommendation that the present study follows.
+The global financial landscape has undergone a paradigm shift in the
+assessment of creditworthiness and loan amount determination. Home loan
+prediction, a critical function of retail banking, involves evaluating a
+borrower\'s ability to repay a long-term debt secured by real estate.
+Historically, this process was governed by the \"Five Cs of Credit\":
+Character, Capacity, Capital, Collateral, and Conditions. However, the
+manual interpretation of these factors often led to subjective biases,
+operational inefficiencies, and a lack of scalability \[1\], \[13\].
 
-### 2.2 Classical Machine Learning for Credit Scoring
+In the contemporary era of Big Data, the volume and variety of financial
+data points have grown exponentially, encompassing not just traditional
+credit scores and income levels, but also alternative data such as
+utility payments, transactional behavior, and even psychometric
+insights. The core objective of home loan prediction is two-fold:
+identifying eligible candidates (classification) and determining the
+optimal loan quantum that balances the bank\'s risk appetite with the
+borrower\'s needs (regression) \[15\], \[22\]. The precision of these
+predictions is paramount; over-estimation leads to increased default
+risk, while under-estimation results in missed business opportunities
+and customer dissatisfaction.
 
-Decision trees emerged as an early interpretable alternative to statistical methods.
-Quinlan [3] formalised the induction of decision trees through the ID3 algorithm,
-establishing recursive partitioning as a principled approach to classification and
-regression. The K-Nearest Neighbors algorithm, formalised by Cover and Hart [4], offered
-a non-parametric baseline that requires no explicit model training but is sensitive to
-the curse of dimensionality in high-dimensional feature spaces. West [12] directly
-compared neural networks against logistic regression and discriminant analysis for credit
-scoring across multiple real-world datasets, finding that multilayer perceptrons provided
-marginal but consistent gains. Baesens et al. [11] extended this comparison by adding
-support vector machines and demonstrating that rule extraction from neural networks can
-produce interpretable decision tables suitable for regulatory review. Huang, Chen, and
-Wang [23] applied support vector machines with various kernel functions to credit scoring,
-demonstrating that the radial basis function kernel outperformed both linear SVMs and
-neural networks on a Taiwanese banking dataset. Hearst et al. [20] provided an accessible
-overview of SVMs and their theoretical margin-maximisation principle, which underlies
-their strong generalisation on high-dimensional financial data.
+2.2 Evolution of Machine Learning in Banking
 
-### 2.3 Ensemble Methods
+The evolution of ML in banking represents a shift from descriptive
+analytics to predictive and prescriptive frameworks. Early systems
+primarily utilized logistic regression for credit scoring due to its
+interpretability \[4\], \[21\]. However, as data volumes grew and
+alternative data sources became available, more sophisticated algorithms
+were adopted. The transition moved through decision trees and random
+forests, which offered better handling of non-linear relationships,
+towards advanced ensemble methods like XGBoost, LightGBM, and CatBoost
+\[2\], \[10\]. Recent advancements (2020-2025) have seen the integration
+of deep learning architectures and hybrid models that combine the
+strengths of diverse algorithmic families to achieve unprecedented
+accuracy in loan forecasting \[1\], \[25\].
 
-Breiman [2] introduced bagging (bootstrap aggregating), showing that averaging
-predictions from models trained on bootstrap resamples of the training data substantially
-reduces variance without increasing bias. Breiman [1] extended this idea into Random
-Forests by additionally randomising the feature subset considered at each tree split,
-producing a decorrelated ensemble with significantly lower variance than both single
-decision trees and bagged trees. Random Forest has since become one of the most widely
-used algorithms for tabular financial data due to its robustness, scalability, and built-in
-feature importance estimates. Dietterich [16] provided a theoretical and empirical
-framework for understanding why ensembles outperform individual classifiers, identifying
-bias, variance, and noise as the three sources of generalisation error that ensembles
-address. Friedman [5] introduced gradient boosting machines (GBM), framing boosting as
-stage-wise gradient descent in function space, and showed that GBMs consistently
-outperform single trees and bagging on a wide range of prediction tasks. Chen and
-Guestrin [6] built on this foundation with XGBoost, incorporating regularisation,
-parallel tree construction, and approximate split-finding to scale gradient boosting to
-large datasets, achieving state-of-the-art results on numerous benchmarks in finance
-and beyond. Lessmann et al. [13] conducted the most comprehensive benchmarking study of
-credit scoring algorithms to date, comparing 41 classifiers across 8 real-world credit
-datasets using statistical testing; they found that ensemble methods — particularly
-Random Forest, gradient boosting, and bagging — significantly outperformed linear and
-single-tree baselines.
+2.3 Machine Learning Applications in Financial Services
 
-### 2.4 Loan and Mortgage Prediction Using Machine Learning
+The integration of Machine Learning (ML) in financial services has
+transcended basic credit scoring. Current applications include fraud
+detection, customer segmentation, personalized marketing, and automated
+wealth management \[5\], \[19\]. In the context of lending, these
+technologies are used to analyze high-dimensional sparse data,
+synthesize transactional and social features, and mitigate information
+asymmetry between borrowers and lenders \[19\], \[20\]. Furthermore,
+ML-driven systems promote financial inclusion by leveraging alternative
+data to assess the creditworthiness of underbanked populations, thereby
+expanding the reach of formal banking services \[5\], \[23\].
 
-Khandani, Kim, and Lo [14] applied machine learning to consumer credit risk at scale,
-using transaction-level data from a major U.S. bank to build models that predicted credit
-card default and delinquency. Their work demonstrated that non-linear ML models capture
-behavioural patterns not accessible to linear models and can materially reduce loss rates
-when integrated into automated credit management systems. Yeh and Lien [15] compared six
-data mining techniques — including artificial neural networks, decision trees, and logistic
-regression — for predicting the probability of default on credit card accounts in Taiwan,
-finding that artificial neural networks achieved the best predictive accuracy. Tsai and
-Wu [19] further explored neural network ensembles for bankruptcy prediction, confirming
-that ensemble averaging of multiple neural networks consistently outperforms individual
-networks. Dastile, Celik, and Potsane [24] conducted a systematic literature review of
-97 studies on credit scoring models published between 2000 and 2019, finding a strong and
-growing trend toward ensemble and deep learning approaches while noting that
-interpretability remains a significant challenge for regulatory compliance. Bao, Yue, and
-Rao [21] proposed a hybrid deep learning framework combining stacked autoencoders and
-long short-term memory (LSTM) networks for financial time series prediction,
-demonstrating that deep architectures can extract latent representations from financial
-data that shallow models miss. The present study focuses on the regression variant of
-loan prediction — estimating the approved loan *amount* rather than a binary
-approval/rejection outcome — which has received comparatively less attention in the
-literature despite its direct operational importance to lending institutions.
+2.4 Loan Eligibility and Amount Prediction
 
-### 2.5 Feature Engineering in Lending Models
+The core challenge in home loan prediction lies in balancing the binary
+decision of eligibility with the continuous estimation of the loan
+amount. Research by Shah \[22\] demonstrates the effectiveness of
+multi-task frameworks, where LightGBM was found to be superior for
+classification tasks (96.23% accuracy), while CatBoost excelled in
+regression for value prediction (R2 = 0.8820). Similarly, Saha et al.
+\[12\] highlight the deployment of real-time cloud-based systems using
+XGBoost to handle numerical features like debt-to-income ratio and FICO
+scores for immediate loan assessment. The integration of regression
+techniques allows banks to tailor loan offers to individual borrower
+capacities, optimizing the loan-to-value ratio \[18\], \[25\].
 
-Feature engineering — the construction of informative derived features from raw data
-using domain knowledge — has been repeatedly identified as one of the most impactful
-steps in the machine learning pipeline for finance. Tibshirani [18] introduced the LASSO
-(Least Absolute Shrinkage and Selection Operator), which performs simultaneous regression
-and feature selection by applying an L1 penalty to coefficients; this provided a formal
-statistical basis for identifying the most predictive features in high-dimensional lending
-datasets. Baesens et al. [11] and Lessmann et al. [13] both found that the composition
-of the feature set has a larger impact on model performance than the choice of algorithm,
-particularly for small-to-medium datasets. In the present study, the three engineered
-features — `MaxEmi`, `MaxLoanAmount`, and `EligibleLoanAmount` — encode the standard
-amortization formula and Nepal Rastra Bank LTV guidelines directly into the feature
-space, reducing the complexity of the learning task for all models.
+2.5 Credit Risk Assessment and Scoring
 
-### 2.6 Property Valuation and Housing Finance
+Credit risk assessment remains the fundamental driver for determining
+loan amounts. Recent studies emphasize the importance of robust feature
+engineering to identify key risk indicators. Nalini and Viswadhanush
+\[15\] identified TotalDebtToIncomeRatio, BankruptcyHistory, and
+CreditScore as the most dominant variables in predicting risk scores.
+Advanced models like the one proposed by Wu \[4\] utilize cost-sensitive
+learning and threshold tuning to reduce expected losses, achieving an
+AUC of 0.95. The shift towards AI-driven underwriting has led to
+substantial improvements in decision accuracy and fairness across
+diverse demographic groups \[20\].
 
-Sirmans, Macpherson, and Zietz [22] surveyed hedonic pricing models for real estate,
-documenting the strong relationship between property attributes (size, location, age) and
-market value. Their review confirms that property value is a primary determinant of
-mortgage size in all major lending markets, consistent with the dominant role of
-`HomeValue` and the LTV-derived `EligibleLoanAmount` feature in the present model.
-The 70% LTV cap enforced by Nepal Rastra Bank [26] further anchors the eligible loan
-amount directly to property value, making `HomeValue` the single most influential raw
-input in the feature set.
+2.6 Regression and Classification Algorithms in Banking
 
-### 2.7 Model Interpretability and Explainability
+Banking institutions utilize a spectrum of algorithms depending on the
+task requirements for transparency versus performance.
 
-As machine learning models are increasingly deployed in high-stakes financial decisions,
-regulatory and ethical concerns about model transparency have intensified. Lundberg and
-Lee [7] introduced SHAP (SHapley Additive exPlanations), a unified framework grounded in
-cooperative game theory that assigns a contribution value to each feature for each
-individual prediction. SHAP values have become the de facto standard for post-hoc
-explanation of tree-based models in credit scoring and lending, enabling institutions to
-provide applicant-level explanations of loan decisions in compliance with regulations such
-as the EU's General Data Protection Regulation (GDPR) right-to-explanation. The present
-study surfaces feature importance from the Random Forest model as an initial step toward
-interpretability; full SHAP integration is identified as a priority direction for future
-work.
+•   \*\*Logistic Regression:\*\* Frequently used as a baseline for its
+interpretability and solid performance in binary classification tasks
+like loan approval \[4\], \[21\].
 
-### 2.8 Deployment and Tooling
+•   \*\*Decision Trees (DT):\*\* Offer simple rules for decision-making
+but are prone to overfitting \[6\], \[17\].
 
-Pedregosa et al. [17] developed scikit-learn, the Python library used for all model
-training, evaluation, and preprocessing in this study. Its unified API enables consistent
-comparison of algorithms with minimal implementation overhead. The deployment layer uses
-Streamlit [25], which provides a Python-native framework for building interactive data
-applications without front-end web development expertise, making it particularly
-well-suited for rapid academic prototyping and demonstration.
+•   \*\*Random Forest (RF):\*\* An ensemble approach that reduces
+variance and improves robustness. It has been cited as a top performer
+for risk score prediction, achieving R-squared values around 0.87
+\[15\].
 
-### 2.9 Regulatory Context
+•   \*\*Support Vector Machines (SVM):\*\* Used for their ability to
+handle high-dimensional data, though they are often resource-intensive
+compared to boosting methods \[21\].
 
-The Nepal Rastra Bank [26] mandates a maximum Loan-to-Value ratio of 70% for home
-loans, directly informing the `EligibleLoanAmount` feature. The 50% Debt-to-Income
-cap used to derive `MaxEmi` reflects standard prudential lending norms applied across
-Nepalese commercial banks. These regulatory constraints are embedded as hard rules in the
-feature engineering pipeline, ensuring the model operates within the legal lending
-framework and that its predictions are financially interpretable.
+•   \*\*Gradient Boosting (XGBoost/LightGBM):\*\* Preferred for
+high-accuracy tasks, effectively capturing non-linear feature
+interactions \[10\], \[22\].
 
-### 2.10 Research Gap
+2.7 Ensemble and Deep Learning Approaches
 
-The preceding review of the literature reveals several distinct but related gaps that
-collectively motivate the present study. These gaps are identified and discussed below
-across five dimensions: task formulation, geographic and regulatory context, feature
-engineering practice, evaluation methodology, and deployment.
+Ensemble methods have consistently outperformed single-model approaches
+in recent literature. Nguyen \[10\] found that XGBoost and LightGBM
+achieved 98% accuracy in distinguishing between \"good\" and \"bad\"
+loans, significantly outperforming traditional logit models. Deep
+learning models, including Long Short-Term Memory (LSTM) networks and
+Temporal Convolutional Networks (TCN), have also been explored for their
+ability to capture temporal dependencies in borrower behavior, with TCNs
+showing superior detection of default events \[2\]. Hybrid constructs
+that combine supervised learning with deep learning architectures are
+increasingly favored for their ability to exploit non-linear
+relationships in complex financial datasets \[1\].
 
-**Gap 1 — Regression vs. Classification Task Formulation.**
-The overwhelming majority of published work in machine learning for lending focuses on
-binary classification: will a loan be approved or rejected? Studies by Yeh and Lien [15],
-Khandani et al. [14], Baesens et al. [11], and the benchmarking work of Lessmann et al.
-[13] all treat loan outcomes as categorical. The regression problem — given that a loan
-*will* be approved, *how much* should be sanctioned? — has received substantially less
-systematic attention in the literature, despite being of equal operational importance.
-The approved loan amount determines the borrower's purchasing capacity, the lender's
-exposure, and the institution's capital allocation. An accurate regression model directly
-addresses a decision that every loan officer must make, yet no dedicated comparative
-benchmarking study on this specific regression task was identified in the survey.
+2.8 Explainable Artificial Intelligence (XAI)
 
-**Gap 2 — Absence of Nepalese and South Asian Housing Finance Studies.**
-Credit scoring research is concentrated in North American, European, and East Asian
-contexts (U.S. mortgage data [14], Taiwanese credit card data [15], German credit [13]).
-Developing economies in South Asia — where housing finance is a rapidly growing sector
-but institutional data infrastructure remains limited — are substantially underrepresented.
-Nepal presents a particularly distinct context: a developing economy with a relatively
-young formal housing finance sector, a specific set of Nepal Rastra Bank prudential
-guidelines (70% LTV cap, DTI norms), income distributions that differ markedly from
-those in benchmark datasets, and a high proportion of applicants with zero reported family
-income. No peer-reviewed study was found that applies machine learning regression to home
-loan amount prediction using data from a Nepalese financial institution.
+As ML models become more complex, the need for transparency becomes
+critical due to regulatory requirements like the GDPR. Explainable AI
+(XAI) modules, such as SHAP (SHapley Additive exPlanations) and LIME
+(Local Interpretable Model-agnostic Explanations), are being integrated
+into loan prediction systems \[17\], \[26\]. These tools allow banks to
+provide clear reasons for loan rejections, ensuring fairness and
+building trust with applicants \[1\], \[5\]. Research indicates that XAI
+helps balance high performance with the interpretability needed for
+responsible AI application in the financial sector \[24\].
 
-**Gap 3 — Regulatory Constraint Embedding in Feature Engineering.**
-Existing feature engineering approaches in credit scoring largely focus on statistical
-feature selection (LASSO [18], recursive feature elimination) or dimensionality reduction,
-without explicitly encoding the regulatory and mathematical constraints that govern
-lending decisions. The standard amortization formula and the LTV ratio are not emergent
-patterns that a model must discover from data — they are known, legally mandated formulae.
-Yet no published study was found that systematically constructs derived features
-(`MaxEmi`, `MaxLoanAmount`, `EligibleLoanAmount`) by directly encoding these formulae
-and regulatory caps into the feature space as a preprocessing step for a regression
-model. This represents both a methodological gap and a missed opportunity: embedding
-regulatory logic as features simplifies the learning task, improves model accuracy, and
-ensures predictions are inherently compliant with lending rules.
+2.9 Data Preprocessing and Feature Engineering
 
-**Gap 4 — Rigorous Evaluation of Simple Baselines in the Regression Setting.**
-Lessmann et al. [13] established a rigorous multi-dataset, multi-metric benchmarking
-protocol for credit *classification*, comparing 41 classifiers with statistical
-significance testing. An equivalent benchmarking study for loan *amount regression* —
-comparing foundational algorithms (Linear Regression, Decision Tree, KNN, Random Forest)
-using both hold-out and cross-validated metrics — has not been conducted in the South
-Asian housing finance context. Without such a baseline study, it is unclear which class
-of algorithm (parametric, tree-based, instance-based, or ensemble) best captures the
-structure of loan amount data in this setting, and whether the complexity of ensemble
-methods is justified relative to simpler alternatives on small-to-medium datasets.
+Effective preprocessing is vital for model reliability. Common steps
+include:
 
-**Gap 5 — End-to-End Deployment for Non-Technical Practitioners.**
-Even where ML models have been developed for lending in academic settings, deployment
-as accessible, practitioner-facing tools remains rare. The majority of published studies
-present results as static tables in a journal article, with no accompanying software
-artefact that a loan officer or risk manager could use without programming expertise.
-Streamlit-based interactive deployment of a loan prediction model, incorporating
-exploratory analysis, model evaluation transparency, and real-time prediction in a single
-interface, has not been demonstrated in the context of Nepalese housing finance.
+•   \*\*Handling Missing Values:\*\* Techniques such as KNNImputer or
+mode imputation are standard \[9\], \[10\].
 
-**Positioning of the Present Study.**
-This thesis directly addresses all five gaps. It frames loan amount prediction explicitly
-as a regression task (Gap 1), uses data from a Nepalese financial institution under
-Nepal Rastra Bank regulatory norms (Gap 2), embeds amortization and LTV constraints as
-engineered features (Gap 3), conducts a principled four-algorithm comparative evaluation
-using both test and cross-validation metrics (Gap 4), and delivers the best model as a
-deployed Streamlit web application accessible to non-technical users (Gap 5). In doing
-so, it contributes the first documented end-to-end machine learning pipeline for home
-loan amount regression in the Nepalese context, combining the methodological rigour of
-established credit-scoring benchmarking with domain-specific financial engineering and
-practical deployment.
+•   \*\*Class Imbalance:\*\* Given that loan defaults are relatively
+rare, methods like SMOTE (Synthetic Minority Over-sampling Technique)
+are frequently employed to balance datasets and prevent model bias
+\[9\], \[17\].
+
+•   \*\*Feature Engineering:\*\* This involves selecting
+high-discriminative variables using Information Value (IV) or Kernel
+Density Estimation (KDE) \[18\]. Innovative features such as time
+deposits, online banking usage, and macroeconomic indicators
+(unemployment, inflation) are increasingly integrated to provide a
+holistic view of the borrower \[6\], \[10\], \[19\].
+
+2.10 Model Optimization and Evaluation Metrics
+
+Optimization techniques like Bayesian optimization and grid search are
+used to fine-tune hyperparameters (e.g., learning rate, max depth)
+\[11\], \[22\]. Performance is evaluated using a variety of metrics:
+
+•   \*\*Classification:\*\* Accuracy, Precision, Recall, F1-score, and
+AUC (Area Under the Curve) \[9\], \[21\].
+
+•   \*\*Regression:\*\* Mean Absolute Error (MAE), Root Mean Square
+Error (RMSE), and the Coefficient of Determination (R2 score) \[11\],
+\[22\].
+
+Higher recall is often prioritized in bank marketing to avoid missing
+potential customers, while precision is critical for risk assessment to
+minimize defaults \[6\], \[17\].
+
+2.11 Comparison of Performance and Datasets
+
+Comparative studies show a clear trend: ensemble boosting models like
+XGBoost and LightGBM generally lead in performance across various
+datasets. For instance, in a study comparing six models, XGBoost
+achieved an R2 of 0.932 for property price estimation \[11\]. Datasets
+vary from Kaggle\'s \"Home Credit Default Risk\" (containing hundreds of
+thousands of rows) to bank-specific historical data \[9\], \[18\]. The
+choice of model often depends on the specific balance required between
+predictive power and computational resource intensity \[21\].
+
+2.12 Critical Analysis of Research Gaps (Detailed)
+
+Based on a systematic review of literature between 2020 and 2025,
+several critical research gaps have been identified that directly inform
+the motivation for this study:
+
+2.12.1 Regression vs. Classification Task Formulation
+
+A primary gap in the current body of research is the disproportionate
+focus on classification over regression. The vast majority of studies
+(approx. 80-90%) frame the loan problem as a binary classification
+task---predicting either loan approval/rejection or default/no-default
+\[2\], \[4\], \[7\], \[10\]. Consequently, the task of predicting the
+continuous \*\*loan amount\*\* (regression) remains significantly
+under-researched. Furthermore, there is a notable absence of multi-task
+learning frameworks that could simultaneously optimize for eligibility
+and quantum, which would better reflect the real-world operational
+workflow of bank loan departments \[22\], \[25\].
+
+2.12.2 Absence of Nepalese and South Asian Housing Finance Studies
+
+A significant geographic and contextual gap exists. Among the reviewed
+papers from 2020 to 2025, there is a distinct absence of studies
+focusing on the \*\*Nepalese housing finance market\*\* or broader South
+Asian housing economies. Most research utilizes datasets from Western or
+global contexts (e.g., Lending Club, Freddie Mac, or generic Kaggle
+datasets) \[3\], \[5\], \[8\], \[9\]. This regional gap means that
+current ML advancements are not yet tailored to the unique regulatory,
+economic, and socio-demographic factors that influence housing finance
+in Nepal, such as high interest rate volatility and informal income
+streams.
+
+2.12.3 Regulatory Constraint Embedding in Feature Engineering
+
+Current machine learning models in banking are predominantly
+data-driven, prioritizing predictive accuracy through standard feature
+engineering techniques like scaling and encoding \[1\], \[6\], \[10\].
+However, they often fail to \*\*explicitly embed regulatory
+constraints\*\*---such as Loan-to-Value (LTV) ratio caps, Debt Service
+Ratio (DSR) limits, or central bank liquidity mandates---directly into
+the feature engineering process or model architecture. These constraints
+are typically treated as post-hoc filters rather than structural
+components of the predictive engine \[2\], \[8\].
+
+2.12.4 Rigorous Evaluation of Simple Baselines in Regression Setting
+
+In the context of loan amount prediction, there is a lack of
+\*\*rigorous evaluation of simple baselines\*\*. While sophisticated
+ensemble methods like XGBoost and LightGBM are frequently compared
+against each other, they are rarely benchmarked against regularized
+linear models (e.g., Ridge, Lasso, or ElasticNet) in a way that
+quantifies the actual marginal utility of the extra complexity for the
+\*amount\* estimation task. Without these rigorous benchmarks, the
+necessity for high-complexity models in banking---where simplicity is
+valued for auditing---remains poorly justified for regression tasks
+\[6\], \[14\], \[25\].
+
+2.12.5 End-to-End Deployment for Non-Technical Practitioners
+
+Finally, there is a distinct lack of research focusing on the
+\*\*usability and end-to-end deployment\*\* of these models for
+non-technical practitioners, such as bank loan officers. While papers
+discuss model transparency through XAI modules (SHAP/LIME) \[1\],
+\[17\], \[26\], they rarely detail the integration of these models into
+low-code/no-code interfaces or decision-support systems that would
+enable a non-technical user to interact with the model directly during a
+customer consultation \[12\], \[20\].
+
+2.13 Current Research Trends (2020-2025)
+
+Recent trends include the adoption of federated learning,
+transformer-based models, and Auto ML with Neural Architecture Search to
+streamline model development \[3\]. There is a growing focus on ethical
+AI, ensuring fairness across demographic groups, and complying with
+evolving financial regulations \[5\], \[20\]. The shift toward hybrid
+architectures that merge traditional statistical methods with advanced
+deep learning represents the current frontier in loan prediction
+research \[1\], \[19\].
+
+2.14 Motivation for the Present Study
+
+The motivation for this thesis is derived directly from these identified
+gaps. By focusing on \*\*Home Loan Amount Prediction\*\* (regression)
+using regional housing data, and rigorously benchmarking
+state-of-the-art ensembles against regularized linear baselines while
+embedding regulatory constraints (LTV/DSR) into the feature set, this
+study aims to provide a deployment-ready framework for the banking
+sector. This study is systematically address these gaps in the context
+of the South Asian financial environment.
+
+2.15 Summary
+
+The literature review confirms that machine learning has fundamentally
+reshaped home loan prediction. Ensemble boosting models like XGBoost,
+LightGBM, and CatBoost have established themselves as the benchmarks for
+accuracy and efficiency. However, challenges regarding data imbalance,
+model interpretability, and the integration of diverse features remain.
+This thesis builds upon these findings to develop a specialized model
+for home loan amount prediction and particularly how a few four popular
+ML algorithms compare with regard to performance metrics.
+
+Table 2.1: Comparison of Existing Studies
+
+  -------------------------------------------------------------------------------
+  **Author(s)**   **Year**   **Objective**    **Best          **Performance
+                                              Performing      Metric**
+                                              Model**         
+  --------------- ---------- ---------------- --------------- -------------------
+  :\-\--          :\-\--     :\-\--           :\-\--          :\-\--
+
+  Suraksha et al. 2025       Transparent Loan Hybrid ML/DL +  High
+                             Risk Assessment  XAI             Accuracy/Recall
+
+  Dulgerov        2025       Predicting Loan  TCN (Deep       Optimal
+                             Defaults         Learning)       Precision/Recall
+
+  Wu              2025       Cost-Sensitive   XGBoost         AUC: 0.95
+                             Default                          
+                             Prediction                       
+
+  Teh & Ng        2025       Loan Default     LightGBM        Accuracy: 0.9764
+                             Influencing                      
+                             Features                         
+
+  Nguyen          2025       Advanced         XGBoost /       Accuracy: 98%
+                             Boosting for     LightGBM        
+                             Defaults                         
+
+  Dritsas et al.  2025       Residential      XGBoost         R2: 0.932
+                             Price Estimation                 
+
+  Saha et al.     2025       Real-Time Loan   XGBoost         Highest Accuracy
+                             Approval                         
+
+  Shah            2025       AI Financial     LightGBM (Cls)  Acc: 96.23% / R2:
+                             Inclusion Model  / CatBoost      0.8820
+                                              (Reg)           
+
+  Hossain et al.  2025       Banking Credit   XGBoost         AUC: 91.3%
+                             Risk Comparison                  
+
+  Wang            2025       Bank Marketing   XGBoost         AUC: 90%
+                             Prediction                       
+  -------------------------------------------------------------------------------
+
+ 
+
+Table 2.2: Comparison of Machine Learning Algorithms
+
+  ----------------------------------------------------------------------------
+  **Algorithm**   **Advantages**      **Disadvantages**    **Suitable
+                                                           Applications**
+  --------------- ------------------- -------------------- -------------------
+  :\-\--          :\-\--              :\-\--               :\-\--
+
+  Logistic        Statistical, high   Fails with           Small datasets,
+  Regression      interpretability,   non-linear data.     simple scoring.
+                  baseline for binary                      
+                  tasks.                                   
+
+  Random Forest   Ensemble (Bagging), Can be slow to       Risk scoring,
+                  robust to outliers, train, less accurate general
+                  good for risk       than boosting.       classification.
+                  scores.                                  
+
+  XGBoost         Gradient Boosting,  Computationally      Large datasets,
+                  parallel            intensive,           competition-level
+                  processing, handles \"black-box.\"       prediction.
+                  sparse data.                             
+
+  LightGBM        Leaf-wise growth,   Sensitive to small   Massive datasets,
+                  fast training, high data (overfitting).  real-time
+                  accuracy on large                        inference.
+                  data.                                    
+
+  CatBoost        Handles categorical Slower inference     Data with many
+                  features natively,  than LightGBM.       categorical
+                  reduces                                  variables.
+                  overfitting.                             
+
+  ANN / Deep      Captures non-linear Very complex,        Behavioral scoring,
+  Learning        and temporal        requires sequential  default timelines.
+                  dependencies        data.                
+                  (LSTM/TCN).                              
+  ----------------------------------------------------------------------------
+
+ 
+
+Table 2.3: Research Gap Analysis
+
+  ------------------------------------------------------------------------
+  **Existing Study Gap**   **Limitation**            **Proposed Solution**
+  ------------------------ ------------------------- ---------------------
+  :\-\--                   :\-\--                    :\-\--
+
+  \*\*Task Formulation\*\* Predominance of binary    Comparative analysis
+                           classification (Yes/No).  of high-precision
+                                                     regression models.
+
+  \*\*Regional Scope\*\*   Absence of South          Utilization of
+                           Asian/Nepalese studies.   regional housing
+                                                     finance data context.
+
+  \*\*Regulatory           Purely data-driven; no    Embedding LTV and DSR
+  Integration\*\*          structural constraints.   limits in feature
+                                                     engineering.
+
+  \*\*Baseline Rigor\*\*   Lack of regularized       Detailed comparison
+                           linear benchmarks.        of OLS, Ridge, and
+                                                     Lasso vs Ensembles.
+
+  \*\*Practitioner         Focus on math over        Framework for
+  Usability\*\*            deployment/UI.            officer-centric
+                                                     decision support.
+  ------------------------------------------------------------------------
+
+ 
+
+Table 2.4: Summary of Recent Studies (Dataset and Metrics)
+
+  -------------------------------------------------------------------------
+  **Author(s)**   **Dataset Source / **Primary Features    **Evaluation
+                  Size**             Used**                Metrics**
+  --------------- ------------------ --------------------- ----------------
+  :\-\--          :\-\--             :\-\--                :\-\--
+
+  Han Wu          Public Credit Risk Standardization &     ROC AUC, PR AUC,
+                  Dataset            Encoding              Brier
+
+  Neo Bank        5,000 Customers    Bank Relationships,   Recall
+                                     Online Usage          
+
+  Billah et al.   Kaggle (1,460      OverallQual, TotalSF, RMSE, MAE, R2
+                  Homes)             GrLivArea             
+
+  Teh & Ng        Kaggle (148,670    Interest, Credit      Acc, Pre, Rec,
+                  rows)              Type, Spread          F1, AUC
+
+  C. Nguyen       Freddie Mac        FICO, CLTV,           Accuracy,
+                  (\>100k loans)     Inflation, Unemp      Sensitivity, AUC
+
+  Nalini et al.   Synthetic Kaggle   DebtToIncome,         Accuracy,
+                  (20k rows)         Bankruptcy, Score     R-squared
+
+  Kai Wang        Kaggle Home Credit Credit Scores,        Pre, Rec, F1,
+                  Default            Income, Amount        AUC
+
+  Sanjiv J. Shah  Loan Approval      Not Specified         F1, Rec, Acc,
+                  Dataset            (AI-Powered)          Pre, MAE, R2
+
+  Hossain et al.  Demographic &      History, Income,      Acc, Pre, Rec,
+                  Financial Data     Demographics          F1, AUC
+
+  Saha et al.     Structured         FICO, Income, DTI,    Accuracy
+                  Financial Data     Balance               
+  -------------------------------------------------------------------------
+
+ 
+
 
 ---
 
@@ -566,18 +788,18 @@ These empirical weights confirm domain expectations: institutional loan approval
 The empirical results establish a consistent performance ordering:
 $$\text{Random Forest} > \text{Linear Regression} > \text{KNN Regressor} > \text{Decision Tree}$$
 
-This hierarchy is grounded in statistical learning theory:
+This hierarchy aligns closely with contemporary credit risk benchmarking literature \[4\], \[10\], \[21\] and is grounded in statistical learning theory:
 
 1. **Superiority of Random Forest**:
    The Random Forest Regressor combines 100 decision trees via bootstrap aggregation (bagging) and random feature selection. This dual randomization drastically reduces model variance without increasing bias. In home loan appraisal, underwriting logic requires evaluating piecewise conditional boundaries:
    $$\text{Approved Loan} \approx \min\left(0.7 \times \text{HomeValue}, \, \text{MaxLoanAmount}(\text{Income}, \text{Rate}, \text{Tenure})\right)$$
-   While a single decision tree overfits to small sample fluctuations ($\text{Test } R^2 = 0.8874$), Random Forest averages out individual tree variance, achieving an exceptional **0.9761 5-fold CV $R^2$**.
+   While a single decision tree overfits to small sample fluctuations ($\text{Test } R^2 = 0.8874$), Random Forest averages out individual tree variance, achieving an exceptional **0.9761 5-fold CV $R^2$** ($\text{Test } R^2 = 0.9367$). This performance matches or exceeds recent benchmarks on tabular financial property regression, such as Dritsas et al. \[11\] ($R^2 = 0.932$), Shah \[22\] ($R^2 = 0.8820$), and Nalini & Viswadhanush \[15\] ($R^2 = 0.87$).
 
 2. **Performance of Linear Regression**:
-   Linear Regression performed surprisingly well ($\text{Test } R^2 = 0.9339$), placing second behind Random Forest. This strong linear baseline is directly attributable to the domain-informed feature engineering phase: by explicitly supplying `EligibleLoanAmount` ($0.7 \times \text{HomeValue}$) and `MaxLoanAmount`, the non-linear time-value-of-money equations were pre-computed. Linear Regression was thus only required to fit a weighted hyper-plane over already linearized eligibility bounds.
+   Linear Regression performed surprisingly well ($\text{Test } R^2 = 0.9339$), placing second behind Random Forest. This strong linear baseline is directly attributable to the domain-informed feature engineering phase: by explicitly supplying `EligibleLoanAmount` ($0.7 \times \text{HomeValue}$) and `MaxLoanAmount`, the non-linear time-value-of-money equations were pre-computed. Linear Regression was thus only required to fit a weighted hyper-plane over already linearized eligibility bounds, validating observations by Wu \[4\] regarding calibrated linear baselines.
 
 3. **Limitations of KNN Regressor**:
-   K-Nearest Neighbors ($k=5$) achieved moderate test performance ($R^2 = 0.9251$) but suffered the lowest cross-validation score ($CV\ R^2 = 0.8710$) and highest error variance ($\text{CV RMSE} = \text{NPR 280,525}$). In a 7-dimensional feature space, distance metrics become sensitive to local sampling density; sparse regions in the applicant distribution lead to inaccurate nearest-neighbor interpolations.
+   K-Nearest Neighbors ($k=5$) achieved moderate test performance ($R^2 = 0.9251$) but suffered the lowest cross-validation score ($CV\ R^2 = 0.8710$) and highest error variance ($\text{CV RMSE} = \text{NPR 280,525}$). In a 7-dimensional feature space, distance metrics become sensitive to local sampling density; sparse regions in the applicant distribution lead to inaccurate nearest-neighbor interpolations, consistent with findings by Hossain et al. \[21\].
 
 ---
 
@@ -589,24 +811,24 @@ The incorporation of Nepal Rastra Bank (NRB) regulatory directives into feature 
 - **Financial TVM Equation**: Calculating maximum loan capacity via monthly compound interest factors:
   $$\text{Factor} = \frac{(1 + r)^n - 1}{r(1 + r)^n}, \quad \text{MaxLoanAmount} = \text{MaxEmi} \times \text{Factor}$$
 
-Without these engineered features, algorithms would have had to learn complex multi-variable non-linear compound interest formulas from a modest dataset ($n \approx 224$). Pre-calculating regulatory limits transformed an intractable non-linear learning problem into a highly transparent mapping task.
+Without these engineered features, algorithms would have had to learn complex multi-variable non-linear compound interest formulas from a modest dataset ($n \approx 224$). Pre-calculating regulatory limits transformed an intractable non-linear learning problem into a highly transparent mapping task. This corroborates empirical findings by Nalini & Viswadhanush \[15\] and Teh & Ng \[9\], who highlighted debt-to-income and collateral valuations as the most dominant risk features in loan amount estimation.
 
 ---
 
 ### 6.3 Operational Implications for Nepalese Housing Finance
 
-Translating the trained Random Forest model into an interactive Streamlit web application yields substantial practical benefits for Nepalese commercial banks and micro-finance institutions:
-- **Standardization & Bias Reduction**: Manual loan appraisals are frequently prone to subjective officer bias and inconsistent risk assessment. The automated model provides an objective, algorithmically reproducible loan estimate within seconds.
-- **Regulatory Compliance by Design**: Because the model's dominant predictors are hard-coded to NRB LTV and DTI caps, predictions inherently respect central bank regulatory boundaries.
-- **Operational Speed**: Reduces loan pre-approval turnaround time from days to instantaneous interactive estimation.
+Translating the trained Random Forest model into an interactive Streamlit web application yields substantial practical benefits for Nepalese commercial banks and micro-finance institutions, addressing key operational gaps identified in Section 2.12:
+- **Standardization & Bias Reduction**: Manual loan appraisals are frequently prone to subjective officer bias and inconsistent risk assessment \[1\], \[13\]. The automated model provides an objective, algorithmically reproducible loan estimate within seconds.
+- **Regulatory Compliance by Design**: Because the model's dominant predictors are hard-coded to NRB LTV and DTI caps, predictions inherently respect central bank regulatory boundaries \[20\], \[24\].
+- **Operational Speed**: Reduces loan pre-approval turnaround time from days to instantaneous interactive estimation, aligning with modern cloud-based lending architectures described by Saha et al. \[12\].
 
 ---
 
 ### 6.4 Limitations and Threats to Validity
 
-1. **Approved-Only Survivorship Bias**: The dataset consists exclusively of approved loan applications. The model estimates loan *quantum* given approval, but does not model credit default probability or rejection risk.
-2. **Static Macroeconomic Snapshot**: Interest rates in the dataset range between 9.51% and 10.37%. Macroeconomic shifts or changes in NRB monetary policy would necessitate periodic model re-calibration.
-3. **Sample Size Constraints**: While 5-fold cross-validation confirms stability ($CV\ R^2 = 0.9761$), expanding the dataset across multiple financial institutions would further strengthen statistical power.
+1. **Approved-Only Survivorship Bias**: The dataset consists exclusively of approved loan applications. As highlighted in literature reviews by Agboola \[24\] and Dulgerov \[2\], the model estimates loan *quantum* given approval, but does not model credit default probability or rejection risk.
+2. **Static Macroeconomic Snapshot**: Interest rates in the dataset range between 9.51% and 10.37%. Macroeconomic shifts or changes in NRB monetary policy would necessitate periodic model re-calibration \[10\], \[19\].
+3. **Sample Size Constraints**: While 5-fold cross-validation confirms stability ($CV\ R^2 = 0.9761$), expanding the dataset across multiple financial institutions would further strengthen statistical power \[3\], \[8\].
 
 ---
 
@@ -614,14 +836,14 @@ Translating the trained Random Forest model into an interactive Streamlit web ap
 
 ### 7.1 Summary of Contributions
 
-This thesis addressed the critical problem of automating approved home loan amount prediction in the Nepalese housing finance sector using supervised machine learning regression algorithms. The research was motivated by the operational limitations of traditional manual credit appraisal — namely subjectivity, inconsistency, time-inefficiency, and susceptibility to officer bias — as well as the relative scarcity of empirical regression-based loan quantum studies in South Asian developing economies.
+This thesis addressed the critical problem of automating approved home loan amount prediction in the Nepalese housing finance sector using supervised machine learning regression algorithms. The research was motivated by the operational limitations of traditional manual credit appraisal — namely subjectivity, inconsistency, time-inefficiency, and susceptibility to officer bias — as well as the relative scarcity of empirical regression-based loan quantum studies in South Asian developing economies (Section 2.12.2).
 
 The study provides four main contributions to the computational finance literature:
 
 1. **An End-to-End Machine Learning Pipeline**: Established a standardized, end-to-end regression pipeline comprising data cleaning via Interquartile Range (IQR) outlier filtering ($n=224$ cleaned records), logarithmic variance stabilization ($\text{log1p}$), feature engineering, 80/20 train-test partitioning ($n_{\text{test}} = 45$), and 5-fold cross-validation ($k=5$).
 2. **Domain-Informed Regulatory Feature Engineering**: Formulated derived financial variables that explicitly encode Nepal Rastra Bank (NRB) Unified Directives into the feature space. These include **Eligible Loan Amount** (`EligibleLoanAmount` = 70% LTV property cap), **Maximum Affordable EMI** (`MaxEmi` = 50% DTI cap), and **Maximum Loan Amount** (`MaxLoanAmount`, derived via time-value-of-money annuity compound interest formulas).
 3. **Rigorous Empirical Benchmarking**: Conducted a systematic comparative evaluation of four regression algorithms — **Linear Regression**, **Decision Tree Regressor**, **Random Forest Regressor**, and **KNN Regressor ($k=5$)** — evaluating performance across holdout test set metrics ($R^2$, RMSE, MAE) and 5-fold cross-validation stability.
-4. **Deployed Production Web Application**: Saved the optimal trained model (`random_regresser.joblib`) and integrated it into a multi-page **Streamlit** web application, providing an interactive, transparent decision-support tool for loan officers, risk managers, and prospective borrowers.
+4. **Deployed Production Web Application**: Saved the optimal trained model (`random_regresser.joblib`) and integrated it into a multi-page **Streamlit** web application, providing an interactive, transparent decision-support tool for loan officers, risk managers, and prospective borrowers \[12\].
 
 ---
 
@@ -630,7 +852,7 @@ The study provides four main contributions to the computational finance literatu
 The empirical results generated during program execution establish three key findings:
 
 1. **Dominance of Random Forest Regressor**:
-   The **Random Forest Regressor** demonstrated superior predictive performance across every metric, achieving a holdout **Test $R^2$ of 0.9367**, an exceptional **5-Fold Cross-Validation Mean $R^2$ of 0.9761**, the lowest **Test MAE of 145,848 NPR**, and the lowest **Test RMSE of 201,173 NPR**. Bootstrap aggregation (100 decision trees) effectively suppressed single-tree variance while modeling non-linear feature interactions.
+   The **Random Forest Regressor** demonstrated superior predictive performance across every metric, achieving a holdout **Test $R^2$ of 0.9367**, an exceptional **5-Fold Cross-Validation Mean $R^2$ of 0.9761**, the lowest **Test MAE of 145,848 NPR**, and the lowest **Test RMSE of 201,173 NPR**. Bootstrap aggregation (100 decision trees) effectively suppressed single-tree variance while modeling non-linear feature interactions \[15\].
 
 2. **Algorithm Performance Ranking**:
    The comparative hierarchy was empirically established as:
@@ -651,7 +873,7 @@ This study is among the first to systematically benchmark machine learning regre
 
 The primary theoretical insight of this work is that **injecting prior financial rules (LTV caps, DTI limits, annuity equations) directly into the feature space transforms complex, non-linear regulatory learning into a highly tractable, auditable regression task**. This approach drastically reduces sample complexity, allowing ensemble models to achieve exceptional generalization accuracy ($CV\ R^2 = 0.9761$) even on modest dataset sizes ($n \approx 224$).
 
-From an operational standpoint, the deployed Streamlit application provides Nepalese commercial banks with a reproducible, objective benchmark that mitigates officer bias, ensures strict adherence to NRB mandates, and accelerates loan pre-approval turnaround times.
+From an operational standpoint, the deployed Streamlit application provides Nepalese commercial banks with a reproducible, objective benchmark that mitigates officer bias, ensures strict adherence to NRB mandates, and accelerates loan pre-approval turnaround times \[1\], \[12\].
 
 ---
 
@@ -659,11 +881,11 @@ From an operational standpoint, the deployed Streamlit application provides Nepa
 
 While this study establishes a robust reference framework, several avenues for future research are identified:
 
-1. **Multi-Institutional Dataset Expansion**: Expanding data collection across multiple Nepalese commercial banks, development banks, and micro-finance institutions ($n > 2,000$) across multiple fiscal years to capture diverse institutional underwriting policies.
-2. **Two-Stage Approval-and-Quantum Pipeline**: Developing a two-stage sequential architecture that combines a binary credit approval classifier (Stage 1) with the loan amount regressor (Stage 2) to eliminate survivorship bias from approved-only data.
-3. **Advanced Gradient-Boosted Trees**: Evaluating state-of-the-art gradient boosting frameworks — **XGBoost**, **LightGBM**, and **CatBoost** — to test potential marginal performance gains over Random Forest as dataset size increases.
-4. **Instance-Level SHAP Explainability**: Incorporating SHAP (SHapley Additive exPlanations) waterfall plots into the Streamlit interface to provide per-applicant decision transparency for regulatory auditing.
-5. **Real-Time API Integration**: Integrating live data pipelines with Nepal Rastra Bank interest rate bulletins, property valuation databases, and Credit Information Bureau (CIB) API endpoints.
+1. **Multi-Institutional Dataset Expansion**: Expanding data collection across multiple Nepalese commercial banks, development banks, and micro-finance institutions ($n > 2,000$) across multiple fiscal years to capture diverse institutional underwriting policies \[5\], \[23\].
+2. **Two-Stage Approval-and-Quantum Pipeline**: Developing a two-stage sequential architecture that combines a binary credit approval classifier (Stage 1) with the loan amount regressor (Stage 2) to eliminate survivorship bias from approved-only data \[22\], \[25\].
+3. **Advanced Gradient-Boosted Trees**: Evaluating state-of-the-art gradient boosting frameworks — **XGBoost**, **LightGBM**, and **CatBoost** — to test potential marginal performance gains over Random Forest as dataset size increases \[4\], \[10\], \[22\].
+4. **Instance-Level SHAP Explainability**: Incorporating Explainable AI (XAI) modules such as SHAP (SHapley Additive exPlanations) and LIME waterfall plots into the Streamlit interface to provide per-applicant decision transparency for regulatory auditing \[17\], \[26\].
+5. **Real-Time API Integration**: Integrating live data pipelines with Nepal Rastra Bank interest rate bulletins, property valuation databases, and Credit Information Bureau (CIB) API endpoints \[12\], \[20\].
 
 ---
 
@@ -675,98 +897,85 @@ The housing finance sector in Nepal stands to benefit significantly from adoptin
 
 ## 8. References
 
-[1]  L. Breiman, "Random forests," *Machine Learning*, vol. 45, no. 1, pp. 5–32,
-     Oct. 2001.
 
-[2]  L. Breiman, "Bagging predictors," *Machine Learning*, vol. 24, no. 2,
-     pp. 123–140, Aug. 1996.
 
-[3]  J. R. Quinlan, "Induction of decision trees," *Machine Learning*, vol. 1, no. 1,
-     pp. 81–106, Mar. 1986.
+\[1\] P. Suraksha et al., \"Transparent Loan Risk Assessment Through
+Machine and Deep Learning,\" DOI: 10.1109/icicnis66685.2025.11315495,
+2025.
 
-[4]  T. M. Cover and P. E. Hart, "Nearest neighbor pattern classification," *IEEE
-     Transactions on Information Theory*, vol. 13, no. 1, pp. 21–27, Jan. 1967.
+\[2\] E. Dulgerov, \"Comparing Different Algorithms when Predicting Loan
+Defaults,\" Telecom, DOI: 10.1109/telecom66943.2025.11304098, 2025.
 
-[5]  J. H. Friedman, "Greedy function approximation: A gradient boosting machine,"
-     *The Annals of Statistics*, vol. 29, no. 5, pp. 1189–1232, Oct. 2001.
+\[3\] U. Shukla et al., \"A Comparative Study of Predictive Analytics
+Techniques in Big Data Analysis,\" DOI:
+10.1109/icdiss68238.2025.11320610, 2025.
 
-[6]  T. Chen and C. Guestrin, "XGBoost: A scalable tree boosting system," in *Proc.
-     22nd ACM SIGKDD Int. Conf. Knowledge Discovery and Data Mining (KDD'16)*,
-     San Francisco, CA, USA, Aug. 2016, pp. 785–794.
+\[4\] H. Wu, \"Comparing LR, RF, and XGBoost for Calibrated Credit
+Default Prediction,\" DOI: 10.54254/2754-1169/2025.bl29296, 2025.
 
-[7]  S. M. Lundberg and S.-I. Lee, "A unified approach to interpreting model
-     predictions," in *Advances in Neural Information Processing Systems 30
-     (NIPS 2017)*, Long Beach, CA, USA, 2017, pp. 4765–4774.
+\[5\] J. Ram Prabu et al., \"ML Models for Credit Scoring and Financial
+Risk Prediction,\" DOI: 10.71443/9789349552906-06, 2025.
 
-[8]  E. I. Altman, "Financial ratios, discriminant analysis and the prediction of
-     corporate bankruptcy," *The Journal of Finance*, vol. 23, no. 4, pp. 589–609,
-     Sep. 1968.
+\[6\] \"Machine Learning for Personal Loan Prediction: A Case Study of
+Neo Bank,\" DOI: 10.54254/2754-1169/2025.gl28635, 2025.
 
-[9]  D. J. Hand and W. E. Henley, "Statistical classification methods in consumer
-     credit scoring: A review," *Journal of the Royal Statistical Society: Series A
-     (Statistics in Society)*, vol. 160, no. 3, pp. 523–541, 1997.
+\[7\] R. Kristin M et al., \"Smart Loan Approval Prediction System,\"
+DOI: 10.5281/zenodo.17413550, 2025.
 
-[10] L. C. Thomas, "A survey of credit and behavioural scoring: Forecasting financial
-     risk of lending to consumers," *International Journal of Forecasting*, vol. 16,
-     no. 2, pp. 149–172, Apr.–Jun. 2000.
+\[8\] M. A. M. Billah et al., \"Comparative Analysis of ML Models for
+House Price Prediction,\" DOI: 10.21203/rs.3.rs-7840588/v1, 2025.
 
-[11] B. Baesens, R. Setiono, C. Mues, and J. Vanthienen, "Using neural network rule
-     extraction and decision tables for credit-risk evaluation," *Management Science*,
-     vol. 49, no. 3, pp. 312–329, Mar. 2003.
+\[9\] S. Y. Teh et al., \"Loan Default Prediction Using Machine Learning
+Algorithms,\" J. Informatics and Web Engineering, 2025.
 
-[12] D. West, "Neural network credit scoring models," *Computers & Operations
-     Research*, vol. 27, no. 11–12, pp. 1131–1152, Sep.–Oct. 2000.
+\[10\] C. Nguyen, \"Advanced loan default prediction models using ML
+boosting algorithms,\" DOI: 10.64336/001c.144823, 2025.
 
-[13] S. Lessmann, B. Baesens, H.-V. Seow, and L. C. Thomas, "Benchmarking state-of-
-     the-art classification algorithms for credit scoring: An update of research,"
-     *European Journal of Operational Research*, vol. 247, no. 1, pp. 124–136,
-     Nov. 2015.
+\[11\] E. Dritsas et al., \"Evaluating ML Approaches for Residential
+Property Price Estimation,\" DOI:
+10.1109/seeda-cecnsm68644.2025.11329623, 2025.
 
-[14] A. E. Khandani, A. J. Kim, and A. W. Lo, "Consumer credit-risk models via
-     machine-learning algorithms," *Journal of Banking & Finance*, vol. 34, no. 11,
-     pp. 2767–2787, Nov. 2010.
+\[12\] A. Saha et al., \"ML-Driven Loan Approval: Evaluating Predictive
+Models and Cloud Deployment,\" DOI:
+10.1109/aibthings66987.2025.11296203, 2025.
 
-[15] I.-C. Yeh and C.-H. Lien, "The comparisons of data mining techniques for the
-     predictive accuracy of probability of default of credit card clients," *Expert
-     Systems with Applications*, vol. 36, no. 2, pp. 2473–2480, Mar. 2009.
+\[13\] A. Tripathi et al., \"Loan approval prediction system using
+machine learning algorithms,\" DOI: 10.1201/9781003593034-60, 2025.
 
-[16] T. G. Dietterich, "Ensemble methods in machine learning," in *Multiple Classifier
-     Systems*, Lecture Notes in Computer Science, vol. 1857, Springer, Berlin,
-     Heidelberg, 2000, pp. 1–15.
+\[14\] T. T. Thái et al., \"Enhancing Regression Accuracy with Ensemble
+Learning,\" Engineering, Tech & Applied Science Research, 2025.
 
-[17] F. Pedregosa et al., "Scikit-learn: Machine learning in Python," *Journal of
-     Machine Learning Research*, vol. 12, pp. 2825–2830, 2011.
+\[15\] R. Nalini et al., \"Predictive Analytics and Feature Importance
+in Financial Decision-making,\" Vision, 2025.
 
-[18] R. Tibshirani, "Regression shrinkage and selection via the lasso," *Journal of
-     the Royal Statistical Society: Series B (Methodological)*, vol. 58, no. 1,
-     pp. 267–288, 1996.
+\[16\] \"Data-driven loan default prediction: A machine learning
+approach,\" DOI: 10.3390/systems13070581, MDPI, 2025.
 
-[19] C.-F. Tsai and J.-W. Wu, "Using neural network ensembles for bankruptcy
-     prediction and credit scoring," *Expert Systems with Applications*, vol. 34,
-     no. 4, pp. 2639–2649, May 2008.
+\[17\] A. S. Reddy et al., \"Towards Intelligent Lending: Predicting
+Loan Approvals with ML,\" DOI: 10.1109/conit65521.2025.11167263, 2025.
 
-[20] M. A. Hearst, S. T. Dumais, E. Osuna, J. Platt, and B. Schölkopf, "Support
-     vector machines," *IEEE Intelligent Systems and Their Applications*, vol. 13,
-     no. 4, pp. 18–28, Jul.–Aug. 1998.
+\[18\] K. Wang, \"Research on Data Driven Personal Credit Default
+Prediction,\" DOI: 10.54254/2754-1169/2025.lh24141, 2025.
 
-[21] W. Bao, J. Yue, and Y. Rao, "A deep learning framework for financial time series
-     using stacked autoencoders and long-short term memory," *PLOS ONE*, vol. 12,
-     no. 7, p. e0180944, Jul. 2017.
+\[19\] Y. Wang, \"Bank Marketing Prediction Based on XGBoost,\" DOI:
+10.54254/2754-1169/2025.lh24150, 2025.
 
-[22] G. S. Sirmans, D. A. Macpherson, and E. N. Zietz, "The composition of hedonic
-     pricing models," *Journal of Real Estate Literature*, vol. 13, no. 1, pp. 1–44,
-     2005.
+\[20\] A. Arora, \"AI-driven revolution in credit underwriting: Impact
+analysis,\" Global J. Eng. Tech. Advances, 2025.
 
-[23] C.-L. Huang, M.-C. Chen, and C.-J. Wang, "Credit scoring with a data mining
-     approach based on support vector machines," *Expert Systems with Applications*,
-     vol. 33, no. 4, pp. 847–856, Nov. 2007.
+\[21\] S. Hossain et al., \"Comparative Analysis of ML Models for Credit
+Risk Prediction,\" TAJET, 2025.
 
-[24] X. Dastile, T. Celik, and M. Potsane, "Statistical and machine learning models
-     in credit scoring: A systematic literature review," *Applied Soft Computing*,
-     vol. 91, p. 106263, Jun. 2020.
+\[22\] S. J. Shah, \"Advanced Framework for Loan Approval Predictions
+Using AI,\" DOI: 10.1109/isec64801.2025.11147327, 2025.
 
-[25] Streamlit Inc., *Streamlit Documentation*, 2023. [Online]. Available:
-     https://docs.streamlit.io
+\[23\] \"AI-based credit scoring models in microfinance,\" 2025.
 
-[26] Nepal Rastra Bank, *Unified Directives 2080*, Nepal Rastra Bank, Kathmandu,
-     Nepal, 2023.
+\[24\] O. K. Agboola, \"Predicting Loan Defaults Using Ensemble ML and
+AI-Driven Credit Scoring,\" DOI: 10.21590/ijtmh.11.02.03, 2025.
+
+\[25\] N. N. R S et al., \"Loan Amount Prediction Using Multi-Model
+Machine Learning,\" DOI: 10.5281/zenodo.13709962, 2024.
+
+\[26\] .Meenakshi, B, \"Enhancing Loan Prediction Accuracy: ML with XAI
+Integration,\" IJSREM, 2024.
