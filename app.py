@@ -326,10 +326,17 @@ if page == "📊 EDA":
         plt.close(fig)
 
     st.subheader("Correlation Heatmap")
-    num_cols = df_raw.select_dtypes(include=np.number).columns
-    fig, ax = plt.subplots(figsize=(10, 6))
+    key_features = ['HomeValue', 'InterestRate', 'Tenure', 'TotalIncome', 'MaxEmi', 'MaxLoanAmount', 'EligibleLoanAmount']
+    log_features = ['HomeValue', 'TotalIncome', 'MaxEmi', 'MaxLoanAmount', 'EligibleLoanAmount']
+    
+    corr_df = nf[key_features].copy()
+    corr_df[log_features] = np.log1p(corr_df[log_features])
+    corr_df['LoanAmount'] = nf['LoanAmount']
+    corr_df['Tenure'] = corr_df['Tenure'].astype(float)
+    
+    fig, ax = plt.subplots(figsize=(10, 8))
     sns.heatmap(
-        df_raw[num_cols].corr(), annot=True, cmap='coolwarm',
+        corr_df.corr(numeric_only=True), annot=True, cmap='coolwarm',
         fmt=".2f", ax=ax
     )
     ax.set_title("Correlation Matrix")

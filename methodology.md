@@ -166,10 +166,10 @@ Following feature pre-processing, four regression algorithms (*Linear Regression
 ![Algorithm Comparison](images/22_algorithm_comparison.png)
 - **Code Segment**: `results_df = pd.DataFrame(results).T`
 - **Explanation**: Multi-panel metric comparison chart evaluating all four models across four key dimensions:
-  1. **Test $R^2$ Score**: Random Forest achieves top predictive power ($R^2 \approx 0.982$), outperforming Linear Regression ($0.941$), Decision Tree ($0.915$), and KNN ($0.887$).
-  2. **5-Fold Cross-Validation $R^2$**: Confirms model generalization stability without overfitting ($CV\ R^2 \approx 0.976$ for Random Forest).
-  3. **Test Mean Absolute Error (MAE)**: Random Forest exhibits the lowest average prediction error (~78,320 NPR).
-  4. **Test Root Mean Squared Error (RMSE)**: Penalizes larger errors, showing Random Forest's superior stability (~112,450 NPR RMSE).
+  1. **Test $R^2$ Score**: Random Forest achieves the highest predictive power (**0.9367**), followed by Linear Regression (0.9339), KNN Regressor (0.9251), and Decision Tree (0.8874).
+  2. **5-Fold Cross-Validation $R^2$**: Confirms generalization stability — Random Forest (**CV $R^2$ = 0.9413**), Linear Regression (0.9403), Decision Tree (0.9081), KNN Regressor (0.8726).
+  3. **Test Mean Absolute Error (MAE)**: Random Forest achieves the lowest test MAE (**157,801 NPR**), followed by Linear Regression (161,640), KNN Regressor (165,946), and Decision Tree (198,195).
+  4. **Test Root Mean Squared Error (RMSE)**: Random Forest achieves the lowest test RMSE (**201,173 NPR**), followed by Linear Regression (205,676), KNN Regressor (218,847), and Decision Tree (268,362).
 
 ---
 

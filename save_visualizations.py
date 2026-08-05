@@ -178,9 +178,19 @@ plt.title('TotalIncome After Removing Outliers')
 plt.savefig(os.path.join(img_dir, "19_boxplot_TotalIncome_after_outliers.png"), bbox_inches='tight', dpi=200)
 plt.close()
 
-# 20. Correlation Matrix
+# 20. Correlation Matrix (Using cleaned and log-transformed features + raw LoanAmount)
 plt.figure(figsize=(10, 8))
-sns.heatmap(df_fe.corr(numeric_only=True), annot=True, cmap='coolwarm', fmt=".2f")
+
+key_features = ['HomeValue', 'InterestRate', 'Tenure', 'TotalIncome', 'MaxEmi', 'MaxLoanAmount', 'EligibleLoanAmount']
+log_features = ['HomeValue', 'TotalIncome', 'MaxEmi', 'MaxLoanAmount', 'EligibleLoanAmount']
+
+corr_df = nf[key_features].copy()
+corr_df[log_features] = np.log1p(corr_df[log_features])
+corr_df['LoanAmount'] = nf['LoanAmount']
+# Convert Tenure to numeric for correlation mapping
+corr_df['Tenure'] = corr_df['Tenure'].astype(float)
+
+sns.heatmap(corr_df.corr(numeric_only=True), annot=True, cmap='coolwarm', fmt=".2f")
 plt.title("Correlation Matrix")
 plt.tight_layout()
 plt.savefig(os.path.join(img_dir, "20_correlation_matrix.png"), bbox_inches='tight', dpi=200)

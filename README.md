@@ -84,14 +84,16 @@ $$MaxLoan = MaxEMI \times \frac{(1 + r)^n - 1}{r \cdot (1 + r)^n}$$
 
 ### 5. Models Trained
 
-| Model | Test R² | CV Mean R² |
-|---|---|---|
-| **Random Forest** ✅ | 0.9367 | Best |
-| Linear Regression | 0.9339 | — |
-| KNN | 0.9251 | — |
-| Decision Tree | 0.8874 | — |
+All models were evaluated on an 80/20 holdout split (*n*_test = 49, from *n* = 241 cleaned records) and 5-fold cross-validation (*k* = 5):
 
-> **Best Model: Random Forest Regressor** (highest R² and lowest RMSE on both test set and 5-fold cross-validation)
+| Model | Test R² | Test RMSE (NPR रू) | Test MAE (NPR रू) | CV R² | CV RMSE (NPR रू) | CV MAE (NPR रू) |
+|---|---|---|---|---|---|---|
+| **Random Forest ✅** | **0.9367** | **201,173** | **157,801** | **0.9413** | **197,981** | **145,848** |
+| Linear Regression | 0.9339 | 205,676 | 161,640 | 0.9403 | 199,126 | 161,882 |
+| KNN Regressor (k=5) | 0.9251 | 218,847 | 165,946 | 0.8726 | 280,525 | 204,377 |
+| Decision Tree | 0.8874 | 268,362 | 198,195 | 0.9081 | 246,745 | 176,859 |
+
+> **Best Model: Random Forest Regressor** — highest R² and lowest error across both holdout test set and 5-fold cross-validation. Feature importance analysis shows collateral bounds drive 96% of predictive weight: `HomeValue` (48.0%) and `EligibleLoanAmount` (48.0%), split equally due to collinearity, while income-based `MaxLoanAmount` contributes 2.5%.
 
 ---
 

@@ -6,9 +6,9 @@
 
 The rapid expansion of the housing finance sector in developing economies such as Nepal has created a critical demand for automated, objective, and accurate decision-support tools for home loan appraisal. Traditional manual underwriting procedures are often time-consuming, prone to human subjectivity, and inconsistent across loan officers. This thesis presents an end-to-end comparative study of four supervised machine learning regression algorithms — **Linear Regression**, **Decision Tree Regressor**, **Random Forest Regressor**, and **K-Nearest Neighbors (KNN) Regressor** — for predicting approved home loan amounts.
 
-The study utilizes a primary dataset of 250 approved home loan records from the Nepalese financial context, encompassing applicant demographics, household income, property valuations, interest rates, tenures, and Equated Monthly Installments (EMI). Prior to model training, domain-informed feature engineering was executed to directly embed Nepal Rastra Bank (NRB) regulatory directives into the feature space. Key engineered variables include **Total Monthly Income** (`TotalIncome`), **Maximum Affordable EMI** (`MaxEmi` = 50% DTI cap), **Maximum Loan Amount** (`MaxLoanAmount`, derived via time-value-of-money annuity compound formulas), and **Eligible Loan Amount** (`EligibleLoanAmount` = 70% LTV property cap). Data cleaning involved Interquartile Range (IQR) outlier removal ($n=224$ clean records) and $\text{log1p}$ natural logarithm transformations to eliminate positive skewness across monetary features.
+The study utilizes a primary dataset of 250 approved home loan records from the Nepalese financial context, encompassing applicant demographics, household income, property valuations, interest rates, tenures, and Equated Monthly Installments (EMI). Prior to model training, domain-informed feature engineering was executed to directly embed Nepal Rastra Bank (NRB) regulatory directives into the feature space. Key engineered variables include **Total Monthly Income** (`TotalIncome`), **Maximum Affordable EMI** (`MaxEmi` = 50% DTI cap), **Maximum Loan Amount** (`MaxLoanAmount`, derived via time-value-of-money annuity compound formulas), and **Eligible Loan Amount** (`EligibleLoanAmount` = 70% LTV property cap). Data cleaning involved Interquartile Range (IQR) outlier removal ($n=241$ clean records) and $\text{log1p}$ natural logarithm transformations to eliminate positive skewness across monetary features.
 
-All models were evaluated on an 80/20 train-test split ($n_{\text{test}} = 45$) and validated using 5-fold cross-validation ($k=5$). Evaluation metrics included $R^2$ (coefficient of determination), Root Mean Squared Error (RMSE), and Mean Absolute Error (MAE). Empirical results demonstrate that the **Random Forest Regressor** significantly outperformed all baseline algorithms, achieving a holdout **Test $R^2$ of 0.9367**, an exceptional **5-Fold Cross-Validation Mean $R^2$ of 0.9761**, the lowest **Test MAE of 145,848 NPR**, and the lowest **Test RMSE of 201,173 NPR**. Linear Regression placed second ($\text{Test } R^2 = 0.9339$), benefiting from pre-linearized regulatory features, followed by KNN ($R^2 = 0.9251$) and Decision Tree ($R^2 = 0.8874$). Feature importance analysis confirmed that regulatory bounds (`EligibleLoanAmount` at 41.2% and `MaxLoanAmount` at 32.8%) govern loan quantum determination.
+All models were evaluated on an 80/20 train-test split ($n_{\text{test}} = 49$) and validated using 5-fold cross-validation ($k=5$). Evaluation metrics included $R^2$ (coefficient of determination), Root Mean Squared Error (RMSE), and Mean Absolute Error (MAE). Empirical results demonstrate that the **Random Forest Regressor** significantly outperformed all baseline algorithms, achieving a holdout **Test $R^2$ of 0.9367**, a strong **5-Fold Cross-Validation Mean $R^2$ of 0.9413**, the lowest **Test MAE of 157,801 NPR**, the lowest **CV MAE of 145,848 NPR**, and the lowest **Test RMSE of 201,173 NPR**. Linear Regression placed second ($\text{Test } R^2 = 0.9339$), benefiting from pre-linearized regulatory features, followed by KNN ($R^2 = 0.9251$) and Decision Tree ($R^2 = 0.8874$). Feature importance analysis confirmed that collateral value (`HomeValue` at 48.0% and `EligibleLoanAmount` at 48.0%) jointly govern loan quantum determination, while income-based constraints (`MaxLoanAmount`) contribute 2.5%, reflecting an importance-splitting effect due to near-perfect collinearity between the two collateral features.
 
 The optimal Random Forest model (`random_regresser.joblib`) was deployed as an interactive, multi-page web application using **Streamlit**, providing instantaneous loan estimation, exploratory analytics, and model governance tools for risk managers and loan officers. This research demonstrates that combining domain-specific regulatory feature engineering with ensemble learning establishes an accurate, auditable, and production-ready framework for automated credit evaluation in housing finance.
 
@@ -724,7 +724,7 @@ To ensure dataset quality and prevent extreme values from distorting regression 
 ![Figure 5.6: HomeValue After Removing Outliers](images/17_boxplot_HomeValue_after_outliers.png)
 *Figures 5.5 & 5.6: Box plots of `HomeValue` before and after removing upper-whisker outliers ($Q3 + 1.5 \times IQR$).*
 
-As depicted in **Figures 5.5 and 5.6**, initial property valuations contained upper-tail outliers exceeding 7.5M NPR. Filtering records above the upper IQR threshold produced a clean, unimodal distribution (`df1`). Similarly, **Figures 5.7 and 5.8** (in `images/18_boxplot_TotalIncome_with_outliers.png` and `images/19_boxplot_TotalIncome_after_outliers.png`) demonstrate the removal of extreme total income outliers, yielding the final cleaned dataset ($n = 224$).
+As depicted in **Figures 5.5 and 5.6**, initial property valuations contained upper-tail outliers exceeding 7.5M NPR. Filtering records above the upper IQR threshold produced a clean, unimodal distribution (`df1`). Similarly, **Figures 5.7 and 5.8** (in `images/18_boxplot_TotalIncome_with_outliers.png` and `images/19_boxplot_TotalIncome_after_outliers.png`) demonstrate the removal of extreme total income outliers, yielding the final cleaned dataset ($n = 241$).
 
 ![Figure 5.7: Total Income Distribution Histogram](images/21_total_income_histogram.png)
 *Figure 5.7: Frequency histogram of raw combined monthly family income (`TotalIncome`).*
@@ -738,32 +738,32 @@ Prior to log transformation, `TotalIncome` exhibited substantial positive skewne
 ![Figure 5.8: Correlation Matrix Heatmap](images/20_correlation_matrix.png)
 *Figure 5.8: Annotated Pearson correlation matrix heatmap for numeric features.*
 
-The correlation matrix (**Figure 5.8**) confirms strong linear dependencies between engineered financial constraints and the target variable `LoanAmount`:
-- **`EligibleLoanAmount` vs `LoanAmount`**: $\mathbf{r = 0.94}$, confirming that LTV collateral caps act as the primary upper ceiling.
-- **`MaxLoanAmount` vs `LoanAmount`**: $\mathbf{r = 0.91}$, confirming the binding nature of income-derived debt service limits.
-- **`HomeValue` vs `LoanAmount`**: $\mathbf{r = 0.92}$, demonstrating high property valuation sensitivity.
+The correlation matrix (**Figure 5.8**) confirms strong linear dependencies between engineered financial constraints (log-transformed) and the target variable `LoanAmount`:
+- **`EligibleLoanAmount` vs `LoanAmount`**: $\mathbf{r = 0.96}$, confirming that LTV collateral caps act as the primary upper ceiling.
+- **`MaxLoanAmount` vs `LoanAmount`**: $\mathbf{r = 0.86}$, confirming the binding nature of income-derived debt service limits.
+- **`HomeValue` vs `LoanAmount`**: $\mathbf{r = 0.96}$, demonstrating high property valuation sensitivity.
 
 ---
 
 ### 5.4 Quantitative Model Evaluation & Algorithm Comparison
 
-All four regression models (*Linear Regression*, *Decision Tree Regressor*, *Random Forest Regressor*, and *K-Nearest Neighbors Regressor*) were trained on the log-transformed feature set using an 80/20 train-test split ($n_{test} = 45$) and evaluated via 5-fold cross-validation ($k=5$).
+All four regression models (*Linear Regression*, *Decision Tree Regressor*, *Random Forest Regressor*, and *K-Nearest Neighbors Regressor*) were trained on the log-transformed feature set using an 80/20 train-test split ($n_{test} = 49$) and evaluated via 5-fold cross-validation ($k=5$).
 
 The empirical evaluation metrics computed during program execution are summarized in **Table 5.1**:
 
 | Model Algorithm | Test $R^2$ Score | Test RMSE (NPR रू) | Test MAE (NPR रू) | 5-Fold CV Mean $R^2$ | 5-Fold CV Mean RMSE (NPR रू) | 5-Fold CV Mean MAE (NPR रू) |
 |---|---|---|---|---|---|---|
-| **Random Forest Regressor** ⭐ | **0.9367** | **201,173** | **145,848** | **0.9761** | **197,981** | **145,848** |
-| **Linear Regression** | 0.9339 | 205,676 | 161,882 | 0.9352 | 199,126 | 161,882 |
-| **KNN Regressor ($k=5$)** | 0.9251 | 218,847 | 204,377 | 0.8710 | 280,525 | 204,377 |
-| **Decision Tree Regressor** | 0.8874 | 268,362 | 176,859 | 0.9023 | 246,745 | 176,859 |
+| **Random Forest Regressor** ⭐ | **0.9367** | **201,173** | **157,801** | **0.9413** | **197,981** | **145,848** |
+| **Linear Regression** | 0.9339 | 205,676 | 161,640 | 0.9403 | 199,126 | 161,882 |
+| **KNN Regressor ($k=5$)** | 0.9251 | 218,847 | 165,946 | 0.8726 | 280,525 | 204,377 |
+| **Decision Tree Regressor** | 0.8874 | 268,362 | 198,195 | 0.9081 | 246,745 | 176,859 |
 
 *Table 5.1: Performance comparison of home loan amount regression models.*
 
 ![Figure 5.9: Algorithm Performance Comparison Chart](images/22_algorithm_comparison.png)
 *Figure 5.9: Four-panel comparative visualization of algorithm metrics (Test $R^2$, CV Mean $R^2$, Test MAE, and Test RMSE).*
 
-As highlighted in **Figure 5.9** and **Table 5.1**, the **Random Forest Regressor** achieves superior predictive accuracy across all metrics, attaining a holdout **Test $R^2$ of 0.9367** and an outstanding **5-Fold Cross-Validation $R^2$ of 0.9761**, alongside the lowest error rates ($\text{MAE} = \text{NPR 145,848}$, $\text{RMSE} = \text{NPR 201,173}$).
+As highlighted in **Figure 5.9** and **Table 5.1**, the **Random Forest Regressor** achieves superior predictive accuracy across all metrics, attaining a holdout **Test $R^2$ of 0.9367** and a strong **5-Fold Cross-Validation $R^2$ of 0.9413**, alongside the lowest test error rates ($\text{MAE} = \text{NPR 157,801}$, $\text{RMSE} = \text{NPR 201,173}$) and the lowest CV MAE ($\text{NPR 145,848}$).
 
 ---
 
@@ -771,13 +771,17 @@ As highlighted in **Figure 5.9** and **Table 5.1**, the **Random Forest Regresso
 
 Feature importance scores extracted from the optimal Random Forest ensemble reveal the relative weight of each variable in predicting approved loan amounts:
 
-1. **`EligibleLoanAmount` (LTV Cap, 70% of HomeValue)**: **41.2%** contribution.
-2. **`MaxLoanAmount` (Income TVM Cap)**: **32.8%** contribution.
-3. **`HomeValue`**: **12.4%** contribution.
-4. **`TotalIncome` & `MaxEmi`**: **8.6%** contribution.
-5. **`InterestRate` & `Tenure`**: **5.0%** contribution.
+1. **`HomeValue` (collateral market value)**: **48.0%** contribution.
+2. **`EligibleLoanAmount` (LTV Cap, 70% of HomeValue)**: **48.0%** contribution.
+3. **`MaxLoanAmount` (Income TVM Cap)**: **2.5%** contribution.
+4. **`TotalIncome`**: **0.5%** contribution.
+5. **`InterestRate`**: **0.5%** contribution.
+6. **`MaxEmi`**: **0.4%** contribution.
+7. **`Tenure`**: **0.1%** contribution.
 
-These empirical weights confirm domain expectations: institutional loan approvals are fundamentally driven by the minimum of collateral LTV bounds and income-based debt capacity limits.
+**Note on collinearity:** `HomeValue` and `EligibleLoanAmount` are near-perfectly correlated (EligibleLoanAmount = 0.70 × HomeValue), causing the Random Forest to split importance roughly equally between them — a known importance-splitting artefact in tree ensembles. Combined, the collateral features account for ~96% of predictive weight, while income-derived constraints (`MaxLoanAmount`, `TotalIncome`, `MaxEmi`) together contribute ~3.4%, and rate/tenure factors ~0.6%.
+
+These empirical weights confirm domain expectations: institutional loan approvals are fundamentally driven by collateral LTV bounds and income-based debt capacity limits, with collateral constraints dominating the predictive structure of this model.
 
 ---
 
@@ -793,13 +797,13 @@ This hierarchy aligns closely with contemporary credit risk benchmarking literat
 1. **Superiority of Random Forest**:
    The Random Forest Regressor combines 100 decision trees via bootstrap aggregation (bagging) and random feature selection. This dual randomization drastically reduces model variance without increasing bias. In home loan appraisal, underwriting logic requires evaluating piecewise conditional boundaries:
    $$\text{Approved Loan} \approx \min\left(0.7 \times \text{HomeValue}, \, \text{MaxLoanAmount}(\text{Income}, \text{Rate}, \text{Tenure})\right)$$
-   While a single decision tree overfits to small sample fluctuations ($\text{Test } R^2 = 0.8874$), Random Forest averages out individual tree variance, achieving an exceptional **0.9761 5-fold CV $R^2$** ($\text{Test } R^2 = 0.9367$). This performance matches or exceeds recent benchmarks on tabular financial property regression, such as Dritsas et al. \[11\] ($R^2 = 0.932$), Shah \[22\] ($R^2 = 0.8820$), and Nalini & Viswadhanush \[15\] ($R^2 = 0.87$).
+   While a single decision tree overfits to small sample fluctuations ($\text{Test } R^2 = 0.8874$), Random Forest averages out individual tree variance, achieving a strong **0.9413 5-fold CV $R^2$** ($\text{Test } R^2 = 0.9367$). This performance matches or exceeds recent benchmarks on tabular financial property regression, such as Dritsas et al. \[11\] ($R^2 = 0.932$), Shah \[22\] ($R^2 = 0.8820$), and Nalini & Viswadhanush \[15\] ($R^2 = 0.87$).
 
 2. **Performance of Linear Regression**:
    Linear Regression performed surprisingly well ($\text{Test } R^2 = 0.9339$), placing second behind Random Forest. This strong linear baseline is directly attributable to the domain-informed feature engineering phase: by explicitly supplying `EligibleLoanAmount` ($0.7 \times \text{HomeValue}$) and `MaxLoanAmount`, the non-linear time-value-of-money equations were pre-computed. Linear Regression was thus only required to fit a weighted hyper-plane over already linearized eligibility bounds, validating observations by Wu \[4\] regarding calibrated linear baselines.
 
 3. **Limitations of KNN Regressor**:
-   K-Nearest Neighbors ($k=5$) achieved moderate test performance ($R^2 = 0.9251$) but suffered the lowest cross-validation score ($CV\ R^2 = 0.8710$) and highest error variance ($\text{CV RMSE} = \text{NPR 280,525}$). In a 7-dimensional feature space, distance metrics become sensitive to local sampling density; sparse regions in the applicant distribution lead to inaccurate nearest-neighbor interpolations, consistent with findings by Hossain et al. \[21\].
+   K-Nearest Neighbors ($k=5$) achieved moderate test performance ($R^2 = 0.9251$) but suffered the lowest cross-validation score ($CV\ R^2 = 0.8726$) and highest error variance ($\text{CV RMSE} = \text{NPR 280,525}$). In a 7-dimensional feature space, distance metrics become sensitive to local sampling density; sparse regions in the applicant distribution lead to inaccurate nearest-neighbor interpolations, consistent with findings by Hossain et al. \[21\].
 
 ---
 
@@ -828,7 +832,7 @@ Translating the trained Random Forest model into an interactive Streamlit web ap
 
 1. **Approved-Only Survivorship Bias**: The dataset consists exclusively of approved loan applications. As highlighted in literature reviews by Agboola \[24\] and Dulgerov \[2\], the model estimates loan *quantum* given approval, but does not model credit default probability or rejection risk.
 2. **Static Macroeconomic Snapshot**: Interest rates in the dataset range between 9.51% and 10.37%. Macroeconomic shifts or changes in NRB monetary policy would necessitate periodic model re-calibration \[10\], \[19\].
-3. **Sample Size Constraints**: While 5-fold cross-validation confirms stability ($CV\ R^2 = 0.9761$), expanding the dataset across multiple financial institutions would further strengthen statistical power \[3\], \[8\].
+3. **Sample Size Constraints**: While 5-fold cross-validation confirms stability ($CV\ R^2 = 0.9413$) on $n=241$ cleaned records, expanding the dataset across multiple financial institutions would further strengthen statistical power \[3\], \[8\].
 
 ---
 
@@ -840,7 +844,7 @@ This thesis addressed the critical problem of automating approved home loan amou
 
 The study provides four main contributions to the computational finance literature:
 
-1. **An End-to-End Machine Learning Pipeline**: Established a standardized, end-to-end regression pipeline comprising data cleaning via Interquartile Range (IQR) outlier filtering ($n=224$ cleaned records), logarithmic variance stabilization ($\text{log1p}$), feature engineering, 80/20 train-test partitioning ($n_{\text{test}} = 45$), and 5-fold cross-validation ($k=5$).
+1. **An End-to-End Machine Learning Pipeline**: Established a standardized, end-to-end regression pipeline comprising data cleaning via Interquartile Range (IQR) outlier filtering ($n=241$ cleaned records), logarithmic variance stabilization ($\text{log1p}$), feature engineering, 80/20 train-test partitioning ($n_{\text{test}} = 49$), and 5-fold cross-validation ($k=5$).
 2. **Domain-Informed Regulatory Feature Engineering**: Formulated derived financial variables that explicitly encode Nepal Rastra Bank (NRB) Unified Directives into the feature space. These include **Eligible Loan Amount** (`EligibleLoanAmount` = 70% LTV property cap), **Maximum Affordable EMI** (`MaxEmi` = 50% DTI cap), and **Maximum Loan Amount** (`MaxLoanAmount`, derived via time-value-of-money annuity compound interest formulas).
 3. **Rigorous Empirical Benchmarking**: Conducted a systematic comparative evaluation of four regression algorithms — **Linear Regression**, **Decision Tree Regressor**, **Random Forest Regressor**, and **KNN Regressor ($k=5$)** — evaluating performance across holdout test set metrics ($R^2$, RMSE, MAE) and 5-fold cross-validation stability.
 4. **Deployed Production Web Application**: Saved the optimal trained model (`random_regresser.joblib`) and integrated it into a multi-page **Streamlit** web application, providing an interactive, transparent decision-support tool for loan officers, risk managers, and prospective borrowers \[12\].
@@ -852,18 +856,17 @@ The study provides four main contributions to the computational finance literatu
 The empirical results generated during program execution establish three key findings:
 
 1. **Dominance of Random Forest Regressor**:
-   The **Random Forest Regressor** demonstrated superior predictive performance across every metric, achieving a holdout **Test $R^2$ of 0.9367**, an exceptional **5-Fold Cross-Validation Mean $R^2$ of 0.9761**, the lowest **Test MAE of 145,848 NPR**, and the lowest **Test RMSE of 201,173 NPR**. Bootstrap aggregation (100 decision trees) effectively suppressed single-tree variance while modeling non-linear feature interactions \[15\].
+   The **Random Forest Regressor** demonstrated superior predictive performance across every metric, achieving a holdout **Test $R^2$ of 0.9367**, a strong **5-Fold Cross-Validation Mean $R^2$ of 0.9413**, the lowest **Test MAE of 157,801 NPR**, the lowest **CV MAE of 145,848 NPR**, and the lowest **Test RMSE of 201,173 NPR**. Bootstrap aggregation (100 decision trees) effectively suppressed single-tree variance while modeling non-linear feature interactions \[15\].
 
 2. **Algorithm Performance Ranking**:
    The comparative hierarchy was empirically established as:
    $$\text{Random Forest } (R^2 = 0.9367) > \text{Linear Regression } (R^2 = 0.9339) > \text{KNN Regressor } (R^2 = 0.9251) > \text{Decision Tree } (R^2 = 0.8874)$$
-   Linear Regression achieved a strong second-place performance due to the pre-linearization of non-linear financial constraints during the feature engineering phase.
 
-3. **Dominance of Regulatory Feature Importances**:
-   Feature importance analysis from the optimal Random Forest model confirmed that loan quantum determination is heavily governed by statutory limits:
-   - `EligibleLoanAmount` (LTV 70% Cap): **41.2%** contribution.
-   - `MaxLoanAmount` (Income TVM Cap): **32.8%** contribution.
-   - Combined, regulatory features account for **74.0%** of total predictive weight.
+3. **Dominance of Collateral Feature Importances**:
+   Feature importance analysis from the optimal Random Forest model confirmed that loan quantum determination is heavily governed by collateral-based features:
+   - `HomeValue` (collateral market value): **48.0%** contribution.
+   - `EligibleLoanAmount` (LTV 70% Cap): **48.0%** contribution.
+   - Combined, these collateral features account for **96.0%** of total predictive weight, reflecting an importance-splitting effect due to their near-perfect collinearity. Income constraints (`MaxLoanAmount`) contribute **2.5%** of the weight.
 
 ---
 
@@ -871,7 +874,7 @@ The empirical results generated during program execution establish three key fin
 
 This study is among the first to systematically benchmark machine learning regression algorithms for home loan amount estimation in Nepal while explicitly incorporating central bank regulatory guidelines into the feature representation. 
 
-The primary theoretical insight of this work is that **injecting prior financial rules (LTV caps, DTI limits, annuity equations) directly into the feature space transforms complex, non-linear regulatory learning into a highly tractable, auditable regression task**. This approach drastically reduces sample complexity, allowing ensemble models to achieve exceptional generalization accuracy ($CV\ R^2 = 0.9761$) even on modest dataset sizes ($n \approx 224$).
+The primary theoretical insight of this work is that **injecting prior financial rules (LTV caps, DTI limits, annuity equations) directly into the feature space transforms complex, non-linear regulatory learning into a highly tractable, auditable regression task**. This approach drastically reduces sample complexity, allowing ensemble models to achieve strong generalization accuracy ($CV\ R^2 = 0.9413$) even on modest dataset sizes ($n = 241$).
 
 From an operational standpoint, the deployed Streamlit application provides Nepalese commercial banks with a reproducible, objective benchmark that mitigates officer bias, ensures strict adherence to NRB mandates, and accelerates loan pre-approval turnaround times \[1\], \[12\].
 
